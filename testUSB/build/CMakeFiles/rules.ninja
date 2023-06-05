@@ -83,7 +83,7 @@ rule ASM_EXECUTABLE_LINKER__bs2_default_Debug
 # Rule for re-running cmake.
 
 rule RERUN_CMAKE
-  command = "C:\Users\giova\Pico SDK v1.5.0\cmake\bin\cmake.exe" --regenerate-during-build -SC:\Users\giova\Documents\Home\UNI\PPSE\testUSB -BC:\Users\giova\Documents\Home\UNI\PPSE\testUSB\build
+  command = "C:\Users\giova\Pico SDK v1.5.0\cmake\bin\cmake.exe" --regenerate-during-build -SC:\Users\giova\Documents\Home\UNI\PPSE\PPSE_Board_Code\testUSB -BC:\Users\giova\Documents\Home\UNI\PPSE\PPSE_Board_Code\testUSB\build
   description = Re-running CMake...
   generator = 1
 

@@ -1,5 +1,5 @@
 
-C:/Users/giova/Documents/Home/UNI/PPSE/testUSB/build/hello_usb.elf:     file format elf32-littlearm
+C:/Users/giova/Documents/Home/UNI/PPSE/PPSE_Board_Code/testUSB/build/hello_usb.elf:     file format elf32-littlearm
 
 Sections:
 Idx Name          Size      VMA       LMA       File off  Algn
@@ -39,16 +39,16 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  17 .debug_ranges 000047e8  00000000  00000000  00035d38  2**3
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_line   000158d5  00000000  00000000  0003a520  2**0
+ 18 .debug_line   000158e5  00000000  00000000  0003a520  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .debug_str    00006923  00000000  00000000  0004fdf5  2**0
+ 19 .debug_str    00006943  00000000  00000000  0004fe05  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 20 .debug_frame  000026b8  00000000  00000000  00056718  2**2
+ 20 .debug_frame  000026b8  00000000  00000000  00056748  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .debug_loc    00016f7c  00000000  00000000  00058dd0  2**0
+ 21 .debug_loc    00016f7c  00000000  00000000  00058e00  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
-C:/Users/giova/Documents/Home/UNI/PPSE/testUSB/build/hello_usb.elf:     file format elf32-littlearm
+C:/Users/giova/Documents/Home/UNI/PPSE/PPSE_Board_Code/testUSB/build/hello_usb.elf:     file format elf32-littlearm
 
 
 Disassembly of section .boot2:
