@@ -1,0 +1,53 @@
+IDEA:
+Data logger: temp  GPS data ora acceleromentro
+Pulsanti monitor per varie funzionalità 
+Led, indicare le modalità e tempo di campionamento
+Buzzer  notificatore di eventi (accensione, attacco USB, fine acquisizione, fine memoria)
+
+todo:
+test:
+    test accelerometro
+    test gps
+    test temperatura
+    test pulsanti
+    test led rgb
+    test buzzer
+    test schermo
+    test timer
+
+test interrupt:
+    test accelerometro
+    test gps
+    test temperatura (non genera interrupt, va gestito con un interrupt del timer o ADC)
+    test pulsanti
+    test timer
+    test led rgb (non genera interrupt)
+    test buzzer (non genera interrupt)
+    test schermo (non genera interrupt)
+
+creazione struttura:
+    creazione 3 stati: data capturing (momento in cui non si tocca la scheda e la lasciamo prendere i dati), 
+                        settings (moemnto in cui l'utente può modificare le modalità di lettura), 
+                        usb trasmission (moemento in cui si trasferisce il file via usb).
+
+        case data capturing:
+            1 impostare tutti i timer e le varie periferiche in base ai settings
+            2 ad ogni interrupt prendere un dato e scriverlo in un file o array o comuqnue salvarlo
+            3 ripetere per un numero definito di ciclo tutto questo
+            4 impostare i led con i tre colori per i tre sensori come caricamento per ogni nuovo dato
+            5 impostare lo schermo con una scritta data capturing e il numero di dati presi su quanti
+        
+        case settings:
+            1 gestire lo schermo come user interface
+            2 salavare tutti i dati scelti dagli utenti
+
+        case USB trasmission:
+            1 quando arriva l'interrupt cambiare stare fermi e non fare niente
+
+
+Oltre a questo ad ogni interrupt 
+    dei bottoni 
+    connessione e disconessione usb
+                                    far partire il buzzer
+                                    
+Quando si entra e si esce dal buzzer fare un suono più lungo
