@@ -8,18 +8,18 @@ todo:
 test:
     test accelerometro
     test gps
-    test temperatura
-    test pulsanti
-    test led rgb
+-   test temperatura 
+-   test pulsanti
+-   test led rgb
     test buzzer
-    test schermo
+-   test schermo
     test timer
 
 test interrupt:
     test accelerometro
     test gps
     test temperatura (non genera interrupt, va gestito con un interrupt del timer o ADC)
-    test pulsanti
+    test pulsanti con deboucing
     test timer
     test led rgb (non genera interrupt)
     test buzzer (non genera interrupt)
