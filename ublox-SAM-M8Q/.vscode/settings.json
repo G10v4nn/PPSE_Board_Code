@@ -38,6 +38,8 @@
         "config_autogen.h": "c",
         "error.h": "c",
         "binary_info.h": "c",
-        "irq.h": "c"
-    }
+        "irq.h": "c",
+        "gps.h": "c"
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }

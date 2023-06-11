@@ -1,129 +1,252 @@
-/**
- * Copyright (c) 2020 Raspberry Pi (Trading) Ltd.
- *
- * SPDX-License-Identifier: BSD-3-Clause
- */
-/*
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
 #include "pico/stdlib.h"
-#include "hardware/uart.h"
-#include "hardware/irq.h"
-
-
-/// \tag::uart_advanced[] 
-
-#define UART_ID uart0
-#define BAUD_RATE 9600
-#define DATA_BITS 8
-#define STOP_BITS 1
-#define PARITY    UART_PARITY_NONE
-
-// We are using pins 0 and 1, but see the GPIO function select table in the
-// datasheet for information on which other pins can be used.
-#define UART_TX_PIN 16
-#define UART_RX_PIN 17
-
-// RX interrupt handler
-void on_uart_rx() {
-    while (uart_is_readable(UART_ID)) {
-        uint8_t ch = uart_getc(UART_ID);
-        printf("\nHello, uart interrupts\n");
-        printf("%d", ch);
-    }
-}
-
-int main() {
-    // Enable UART so we can print status output
-    stdio_init_all();
-
-    // Set up our UART with a basic baud rate.
-    uart_init(UART_ID, 2400);
-
-    // Set the TX and RX pins by using the function select on the GPIO
-    // Set datasheet for more information on function select
-    gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
-    gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
-
-    // Actually, we want a different speed
-    // The call will return the actual baud rate selected, which will be as close as
-    // possible to that requested
-    int __unused actual = uart_set_baudrate(UART_ID, BAUD_RATE);
-
-    // Set UART flow control CTS/RTS, we don't want these, so turn them off
-    uart_set_hw_flow(UART_ID, false, false);
-
-    // Set our data format
-    uart_set_format(UART_ID, DATA_BITS, STOP_BITS, PARITY);
-
-    // Turn off FIFO's - we want to do this character by character
-    uart_set_fifo_enabled(UART_ID, false);
-
-    // Set up a RX interrupt
-    // We need to set up the handler first
-    // Select correct interrupt for the UART we are using
-    int UART_IRQ = UART_ID == uart0 ? UART0_IRQ : UART1_IRQ;
-
-    // And set up and enable the interrupt handlers
-    irq_set_exclusive_handler(UART_IRQ, on_uart_rx);
-    irq_set_enabled(UART_IRQ, true);
-
-    // Now enable the UART to send interrupts - RX only
-    uart_set_irq_enables(UART_ID, true, false);
-
-    // OK, all set up.
-    // Lets send a basic string out, and then run a loop and wait for RX interrupts
-    // The handler will count them, but also reflect the incoming data back with a slight change!
-    printf("\nHello, uart interrupts\n");
-
-    while (1)
-        tight_loop_contents();
-}
-
-/// \end:uart_advanced[]
-*/
-
-
-/**
- * Copyright (c) 2020 Raspberry Pi (Trading) Ltd.
- *
- * SPDX-License-Identifier: BSD-3-Clause
- */
-
-
-#include <stdio.h>
-#include "pico/stdlib.h"
+#include "hardware/gpio.h"
 #include "hardware/uart.h"
 
-/// \tag::hello_uart[]
+#include "types.h"
+#include "misc.h"
+#include "gps.h"
 
-#define UART_ID uart0
-#define BAUD_RATE 9600
+#define GPS_EN 18
+#define GPS_RX 4
+#define GPS_TX 5
 
-// We are using pins 0 and 1, but see the GPIO function select table in the
-// datasheet for information on which other pins can be used.
-#define UART_TX_PIN 16
-#define UART_RX_PIN 17
+#define LANDING_ALTITUDE    100
 
-int main() {
-    // Enable UART so we can print status output
-    stdio_init_all();
-    // Set up our UART with the required speed.
-    uart_init(UART_ID, BAUD_RATE);
+struct TGPS GPS;
 
-    // Set the TX and RX pins by using the function select on the GPIO
-    // Set datasheet for more information on function select
-    gpio_set_function(UART_TX_PIN, GPIO_FUNC_UART);
-    gpio_set_function(UART_RX_PIN, GPIO_FUNC_UART);
+int GPSChecksumOK(unsigned char *Buffer, int Count)
+{
+  unsigned char XOR, i, c;
 
-    // Use some the various UART functions to send out data
-    // In a default system, printf will also output via the default UART
+  XOR = 0;
+  for (i = 1; i < (Count-4); i++)
+  {
+    c = Buffer[i];
+    XOR ^= c;
+  }
 
-    while(1){
-        uint8_t data;
-        printf("dentro");
-        data = uart_getc(uart0);
-        printf("dato: %d", data);
-    }
+  return (Buffer[Count-4] == '*') && (Buffer[Count-3] == Hex(XOR >> 4)) && (Buffer[Count-2] == Hex(XOR & 15));
 }
 
-/// \end::hello_uart[]
+void SendUBX(unsigned char *msg, int len)
+{
+	int i;
+	
+	for (i=0; i<len; i++)
+	{
+		uart_putc(uart1, msg[i]);
+	}
+}
+
+float FixPosition(float Position)
+{
+	float Minutes, Seconds;
+	
+	Position = Position / 100;
+	
+	Minutes = trunc(Position);
+	Seconds = fmod(Position, 1);
+
+	return Minutes + Seconds * 5 / 3;
+}
+
+void ProcessLine(struct TGPS *GPS, char *Buffer, int Count)
+{
+    float utc_time, latitude, longitude, hdop, altitude, speed, course;
+	int lock, satellites, date;
+	char active, ns, ew, units, speedstring[16], coursestring[16];
+	
+    if (GPSChecksumOK(Buffer, Count))
+	{
+		satellites = 0;
+	
+		if (strncmp(Buffer+3, "GGA", 3) == 0)
+		{
+			if (sscanf(Buffer+7, "%f,%f,%c,%f,%c,%d,%d,%f,%f,%c", &utc_time, &latitude, &ns, &longitude, &ew, &lock, &satellites, &hdop, &altitude, &units) >= 1)
+			{	
+				// $GPGGA,124943.00,5157.01557,N,00232.66381,W,1,09,1.01,149.3,M,48.6,M,,*42
+				GPS->Time = utc_time;
+				GPS->Hours = GPS->Time / 10000;
+				GPS->Minutes = (GPS->Time / 100) % 100;
+				GPS->Seconds = GPS->Time % 100;
+				GPS->SecondsInDay = GPS->Hours * 3600 + GPS->Minutes * 60 + GPS->Seconds;					
+
+				if (GPS->UseHostPosition)
+				{
+					GPS->UseHostPosition--;
+				}
+				else if (satellites >= 4)
+				{
+					GPS->Latitude = FixPosition(latitude);
+					if (ns == 'S') GPS->Latitude = -GPS->Latitude;
+					GPS->Longitude = FixPosition(longitude);
+					if (ew == 'W') GPS->Longitude = -GPS->Longitude;
+					GPS->Altitude = altitude;
+				}
+
+				GPS->Satellites = satellites;
+				
+				
+				if (GPS->Altitude > GPS->MaximumAltitude)
+				{
+					GPS->MaximumAltitude = GPS->Altitude;
+				}
+
+				if ((GPS->Altitude < GPS->MinimumAltitude) || (GPS->MinimumAltitude == 0))
+				{
+					GPS->MinimumAltitude = GPS->Altitude;           
+				}
+
+				// Launched?
+				if ((GPS->AscentRate >= 1.0) && (GPS->Altitude > (GPS->MinimumAltitude+150)) && (GPS->FlightMode == fmIdle))
+				{
+					GPS->FlightMode = fmLaunched;
+					printf("*** LAUNCHED ***\n");
+				}
+
+				// Burst?
+				if ((GPS->AscentRate < -10.0) && (GPS->Altitude < (GPS->MaximumAltitude+50)) && (GPS->MaximumAltitude >= (GPS->MinimumAltitude+2000)) && (GPS->FlightMode == fmLaunched))
+				{
+					GPS->FlightMode = fmDescending;
+					printf("*** DESCENDING ***\n");
+				}
+
+				// Landed?
+				if ((GPS->AscentRate >= -0.1) && (GPS->Altitude <= LANDING_ALTITUDE+2000) && (GPS->FlightMode >= fmDescending) && (GPS->FlightMode < fmLanded))
+				{
+					GPS->FlightMode = fmLanded;
+					printf("*** LANDED ***\n");
+				}        
+			}
+		}
+		else if (strncmp(Buffer+3, "RMC", 3) == 0)
+		{
+			speedstring[0] = '\0';
+			coursestring[0] = '\0';
+			if (sscanf(Buffer+7, "%f,%c,%f,%c,%f,%c,%[^','],%[^','],%d", &utc_time, &active, &latitude, &ns, &longitude, &ew, speedstring, coursestring, &date) >= 7)
+			{
+				// $GPRMC,124943.00,A,5157.01557,N,00232.66381,W,0.039,,200314,,,A*6C
+
+				speed = atof(speedstring);
+				course = atof(coursestring);
+				
+				GPS->Speed = (int)speed;
+				GPS->Direction = (int)course;
+			}
+		}
+		else if (strncmp(Buffer+3, "GSV", 3) == 0)
+        {
+            // Disable GSV
+            printf("Disabling GSV\r\n");
+            unsigned char setGSV[] = { 0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x03, 0x39 };
+            SendUBX(setGSV, sizeof(setGSV));
+        }
+		else if (strncmp(Buffer+3, "GLL", 3) == 0)
+        {
+            // Disable GLL
+            printf("Disabling GLL\r\n");
+            unsigned char setGLL[] = { 0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x2B };
+            SendUBX(setGLL, sizeof(setGLL));
+        }
+		else if (strncmp(Buffer+3, "GSA", 3) == 0)
+        {
+            // Disable GSA
+            printf("Disabling GSA\r\n");
+            unsigned char setGSA[] = { 0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x32 };
+            SendUBX(setGSA, sizeof(setGSA));
+        }
+		else if (strncmp(Buffer+3, "VTG", 3) == 0)
+        {
+            // Disable VTG
+            printf("Disabling VTG\r\n");
+            unsigned char setVTG[] = {0xB5, 0x62, 0x06, 0x01, 0x08, 0x00, 0xF0, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x05, 0x47};
+            SendUBX(setVTG, sizeof(setVTG));
+        }
+        else
+        {
+            printf("Unknown NMEA sentence: %s\n", Buffer);
+        }
+    }
+    else
+    {
+       printf("Bad checksum\r\n");
+	}
+}
+
+void setup_gps(void)
+{
+	// Set up UART UBlox GPS
+	printf("  - Init GPS  - ");
+
+	//turn on GPS
+	gpio_init(GPS_EN);
+	gpio_set_dir(GPS_EN, GPIO_OUT);
+	gpio_put(GPS_EN, 0);
+
+	// Initialise UART 1
+	uart_init(uart1, 9600);
+	gpio_set_function(GPS_RX, GPIO_FUNC_UART);
+	gpio_set_function(GPS_TX , GPIO_FUNC_UART);
+
+	printf("OK\n");
+}
+
+void check_gps(struct TGPS *GPS)
+{
+	static unsigned char Line[100];
+	static int Length=0;
+
+	while (uart_is_readable(uart1))
+	{
+		char Character;
+		
+		Character = uart_getc(uart1);
+		// putchar(Character);
+
+		if (Character == '$')
+		{
+			Line[0] = Character;
+			Length = 1;
+		}
+		else if (Length > 90)
+		{
+			Length = 0;
+		}
+		else if ((Length > 0) && (Character != '\r'))
+		{
+			Line[Length++] = Character;
+			if (Character == '\n')
+			{
+				Line[Length] = '\0';
+				printf("%s", Line);
+				ProcessLine(GPS, Line, Length);
+				Length = 0;
+			}
+		}
+	}
+}
+
+int main()
+{
+	stdio_init_all();
+	sleep_ms(5000);
+	printf("\nPi Pico HAB Tracker V1.0");
+	printf("\n========================\n\n");
+	//setup_default_uart();
+
+	// Init modules
+	printf("Initialisation ...\n\n");
+	setup_gps();
+	
+	printf("\nTracker Running ...\n\n");
+	
+	while (true)
+	{
+		check_gps(&GPS);
+		sleep_ms(1000);
+	}
+}

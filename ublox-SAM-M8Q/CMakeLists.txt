@@ -12,12 +12,13 @@ pico_sdk_init()
 # rest of your project
 
 add_executable(ublox-SAM-M8Q
-        GPS.c
+        misc.c
+        gps.c
         )
 
 
 # pull in common dependencies
-target_link_libraries(ublox-SAM-M8Q pico_stdlib hardware_uart hardware_irq)
+target_link_libraries(ublox-SAM-M8Q pico_stdlib hardware_uart hardware_gpio)
 
 # enable usb output, disable uart output
 pico_enable_stdio_usb(ublox-SAM-M8Q 1)
