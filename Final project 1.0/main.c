@@ -62,8 +62,7 @@
 
 #include "pico.h"
 #include "hardware/gpio.h"
-
-
+#include "hardware/adc.h"
 #include "hardware/rtc.h"
 #include "hardware/pll.h"
 #include "hardware/clocks.h"
@@ -75,56 +74,10 @@
 // For scb_hw so we can enable deep sleep
 #include "hardware/structs/scb.h"
 
-// #include "hardware/gpio.h"
-// #include "hardware/adc.h"
+#include "datatypes.h"
+#include "accelerometer.h"
 
 #define MAX_SAMPLING_RATE 150
-void buttons_callback(uint gpio, uint32_t events);
-
-void init_enviroment(){
-    stdio_init_all();
-    hw_clear_bits(&timer_hw->pause, TIMER_PAUSE_BITS);
-}
-void init_buttons(){
-    gpio_pull_up(22);
-    gpio_pull_up(23);
-    gpio_pull_up(24);
-    gpio_pull_up(25);
-    gpio_set_irq_enabled_with_callback(22, GPIO_IRQ_LEVEL_LOW, true, &buttons_callback);
-    gpio_set_irq_enabled_with_callback(23, GPIO_IRQ_LEVEL_LOW, true, &buttons_callback);
-    gpio_set_irq_enabled_with_callback(24, GPIO_IRQ_LEVEL_LOW, true, &buttons_callback);
-    gpio_set_irq_enabled_with_callback(25, GPIO_IRQ_LEVEL_LOW, true, &buttons_callback);
-    // per cambio stato GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL
-}
-void int_screen(){
-    
-}
-void init_adc(){
-    
-}
-void init_gps(){
-    
-}
-void init_accelerometer(){
-    
-}
-void init_buzzer(){
-
-}
-
-void init_led(){
-
-}
-void init_hardware(){
-    init_enviroment();
-    init_buttons();
-    int_screen();
-    init_adc();
-    init_gps();
-    init_accelerometer();
-    init_buzzer();
-    init_led();
-}
 
 /******************************************************************
 * definition of the Finite State Machine structure */
@@ -190,8 +143,10 @@ typedef struct{
     void (*state_function)(void);
 } StateMachine_GPS_t;
 
+
 /*******************************************************************/
 /* Define struct as data storage of all settings */
+
 typedef struct {
     /* variables to hold current state */
     State_Menu current_state_menu;
@@ -217,21 +172,16 @@ typedef struct {
     int GPS_Sampling_Rate;
 
 
-
-
     /* data */
-}Settings_storage;
-
-///////////////////////////////   definizioni delle variabili globali    ////////////////////////////////////////////
+} Settings_storage;
 
 
+/*******************************************************************/
+/* definizioni delle variabili globali */
 
 Settings_storage settings = {
     
-    
-    
-    
-    
+
     STATE_INIT, // State_Menu current_state_menu;
     STATE_SETTINGS, // State_Function current_state_function;
     STATE_TEMPERATURA, // State_Settings current_state_settings;
@@ -261,7 +211,95 @@ Settings_storage tmp_settings = {
 
 };
 
-///////////////////////////////   state - functioncall link    ////////////////////////////////////////////
+
+/*******************************************************************/
+/* definizioni delle funzioni di inizializzazione */
+
+void buttons_callback(uint gpio, uint32_t events);
+
+void init_enviroment(){
+    stdio_init_all();
+    hw_clear_bits(&timer_hw->pause, TIMER_PAUSE_BITS);
+}
+void init_buttons(){
+    gpio_pull_up(22);
+    gpio_pull_up(23);
+    gpio_pull_up(24);
+    gpio_pull_up(25);
+    gpio_set_irq_enabled_with_callback(22, GPIO_IRQ_LEVEL_LOW, true, &buttons_callback);
+    gpio_set_irq_enabled_with_callback(23, GPIO_IRQ_LEVEL_LOW, true, &buttons_callback);
+    gpio_set_irq_enabled_with_callback(24, GPIO_IRQ_LEVEL_LOW, true, &buttons_callback);
+    gpio_set_irq_enabled_with_callback(25, GPIO_IRQ_LEVEL_LOW, true, &buttons_callback);
+    // per cambio stato GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL
+}
+
+void init_screen(){
+    
+}
+
+//da togliere e mettere nei file di temperatura
+void init_adc(){
+    adc_init();
+    // Make sure GPIO is high-impedance, no pullups etc
+    adc_gpio_init(26);
+    // Select ADC input 0 (GPIO26)
+    adc_select_input(0);
+    adc_set_clkdiv(500);
+}
+
+void init_accelerometer(){
+
+}
+
+void init_gps(){
+    
+}
+
+void init_buzzer(){
+
+}
+
+void init_led(){
+
+}
+
+void init_hardware(){
+    init_enviroment();
+    init_buttons();
+    int_screen();
+    init_adc();
+    init_gps();
+    init_accelerometer();
+    init_buzzer();
+    init_led();
+}
+
+/*******************************************************************/
+/* definizioni delle funzioni di acquisizione dati */
+
+void get_temperature(struct Data_storage *Data){
+    // 12-bit conversion, assume max value == ADC_VREF == 3.3 V
+    const float conversion_factor = 3.3f / (1 << 12);
+    uint16_t result = adc_read();
+    float temperature = (result*conversion_factor - 0.5)/0.01;
+    //printf("Raw value: 0x%03x, voltage: %f V\n", result, result * conversion_factor);
+    //printf("Temperature: %f\n", temperature);
+
+    Data->temperature = temperature;
+}
+
+void get_accelerometer(struct Data_storage *Data){
+
+}
+
+void get_GPS(struct Data_storage *Data){
+    
+}
+
+
+/*******************************************************************/
+/* state - functioncall link */
+
 void fn_INIT();
 void fn_DEFAULT();
 
@@ -310,7 +348,8 @@ StateMachine_GPS_t fsm_GPS[] = {
 };
 
 
-///////////////////////////////   menu state    ////////////////////////////////////////////
+/*******************************************************************/
+/* menu state */
 
 void fn_INIT(){
     // inizializziamo tutti i vari parametri come default
@@ -353,7 +392,9 @@ void fn_DEFAULT(){
  
 }
 
-///////////////////////////////   function state    ////////////////////////////////////////////
+
+/*******************************************************************/
+/* function state */
 
 void fn_SETTINGS(){
     //default value
@@ -438,7 +479,9 @@ void fn_USB(){
     }
 }
 
-///////////////////////////////   settings state    ////////////////////////////////////////////
+
+/*******************************************************************/
+/* settings state */
 
 void fn_TEMPERATURA(){
     settings.final_depth = true;
@@ -509,7 +552,8 @@ void fn_GPS(){
 }
 
 
-///////////////////////////////   state GPS - attribute    ////////////////////////////////////////////
+/*******************************************************************/
+/* state GPS - attribute */
 
 void fn_GPS_SAMPLING_RATE(){
     settings.final_depth = true;
@@ -519,7 +563,10 @@ void fn_GPS_SAMPLING_RATE(){
     // mostra a schermo il valore temporaneo di SAMPLING_RATE
 }
 
-///////////////////////////////   state ACC - attribute    ////////////////////////////////////////////
+
+/*******************************************************************/
+/* state ACC - attribute */
+
 void fn_ACC_X(){
     settings.final_depth = true;
     printf("ACCELEROMETER \n");
