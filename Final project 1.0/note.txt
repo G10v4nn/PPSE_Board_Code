@@ -1,0 +1,36 @@
+un solo sampling rate per tutti i sensori
+
+led accensione ogni 1/8
+come salvare i dati #define max = 100
+vettore struct {
+    data ora sempre * +2 e data per ora legale o no
+
+    cordinate se disponibile
+    gradi 1 nord
+    gradi 2 est
+    altitudine
+
+    acc x
+    acc y
+    acc z
+
+    temperatura fissa
+}
+
+#define max_rate 1hr
+#define min_rate 1s
+sampling rate 1 ogni s 
+
+
+struct dati take_data_from_GPS(){
+
+}
+
+struct dati take_data_from_ACC(){
+
+}
+
+int take_data_from_TEMP(){
+
+}
+
