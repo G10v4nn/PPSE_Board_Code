@@ -66,6 +66,7 @@ void mma8451_set_state(uint8_t state) {
 
 int main() {
     stdio_init_all();
+    sleep_ms(3000);
 
 #if !defined(i2c_default) || !defined(PICO_DEFAULT_I2C_SDA_PIN) || !defined(PICO_DEFAULT_I2C_SCL_PIN)
 #warning i2c/mma8451_i2c example requires a board with I2C pins
@@ -98,7 +99,7 @@ int main() {
     mma8451_set_state(0x01);
 
     while (1) {
-
+        printf("inside while");
         // Start reading acceleration registers for 2 bytes
         i2c_write_blocking(i2c_default, ADDRESS, &REG_X_MSB, 1, true);
         i2c_read_blocking(i2c_default, ADDRESS, buf, 2, false);
