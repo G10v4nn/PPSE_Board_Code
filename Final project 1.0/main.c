@@ -69,6 +69,8 @@
 #include "hardware/xosc.h"
 #include "hardware/rosc.h"
 #include "hardware/regs/io_bank0.h"
+#include "hardware/i2c.h"
+
 // For __wfi
 #include "hardware/sync.h"
 // For scb_hw so we can enable deep sleep
@@ -76,6 +78,7 @@
 
 #include "datatypes.h"
 #include "accelerometer.h"
+#include "screen.c"
 
 #define MAX_SAMPLING_RATE 150
 
@@ -241,7 +244,7 @@ void init_buttons(){
 }
 
 void init_screen(){
-    
+    init_screen_i2c();
 }
 
 //da togliere e mettere nei file di temperatura
@@ -278,7 +281,7 @@ void init_led(){
 void init_hardware(){
     init_enviroment();
     init_buttons();
-    int_screen();
+    init_screen();
     init_adc();
     init_gps();
     init_accelerometer();
@@ -395,6 +398,9 @@ StateMachine_GPS_t fsm_GPS[] = {
 void fn_INIT(){
     // inizializziamo tutti i vari parametri come default
     init_hardware();
+    clear_screen();
+    WriteString_Fonts_(4,0,"initialization",font_8x8);
+    WriteString_Fonts_(30,50,"done",font_12x16);
     printf("initialization done \n");
     settings.current_state_menu = STATE_DEFAULT;
     tmp_settings = settings;
@@ -419,12 +425,18 @@ void fn_DEFAULT(){
         {
         case STATE_SETTINGS:
             printf("\t STATE_SETTINGS \n");
+            clear_screen();
+            write_menu_on_screen("MENU'","Start Sampling","Settings","");
             break;
         case STATE_DATA_EXTRACTION:
             printf("\t STATE_DATA_EXTRACTION \n");
+            clear_screen();
+            write_menu_on_screen("MENU'","USB transfer","Start Sampling","Settings");
             break;
         case STATE_USB:
             printf("\t STATE_USB \n");
+            clear_screen();
+            write_menu_on_screen("MENU'","","USB transfer","Start Sampling");
             break;
         }
 
@@ -458,17 +470,25 @@ void fn_SETTINGS(){
         printf("selettore su:");
         switch (settings.current_state_settings)
         {
-        case STATE_ACCELEROMETRO:
-            printf("\t STATE_ACCELEROMETRO \n");
-            break;
         case STATE_TEMPERATURA:
             printf("\t STATE_TEMPERATURA \n");
+            clear_screen();
+            write_menu_on_screen("Settings","Accelerometer","Temperature","");
+            break;
+        case STATE_ACCELEROMETRO:
+            printf("\t STATE_ACCELEROMETRO \n");
+            clear_screen();
+            write_menu_on_screen("Settings","GPS","Accelerometer","Temperature");
             break;
         case STATE_GPS:
             printf("\t STATE_GPS \n");
+            clear_screen();
+            write_menu_on_screen("Settings","Sampling rate","GPS","Accelerometer");
             break;
         case STATE_SAMPLING_RATE:
             printf("\t STATE_SAMPLING_RATE \n");
+            clear_screen();
+            write_menu_on_screen("Settings","","Sampling rate","GPS");
             break;
         } 
         // mostra a schermo la selezione tra acc/temp/GPS
@@ -493,13 +513,16 @@ void fn_DATA_EXTRACTION(){
         printf("DATA EXTRACTION\n");
         printf("more info \n");
         struct Data_storage Data;
-        init_Data_storage(&Data);        
+        init_Data_storage(&Data);
+        clear_screen();
+        write_menu_on_screen("SAMPLING","","loading","");        
         if(!started){
             started = true;
             get_temperature(&Data);
             get_accelerometer(&Data);
             get_GPS(&Data);
             print_DATA(&Data);
+            // da modificare
             sleep_ms(settings.Sampling_Rate);
             started = false;
             interrompi = true;
@@ -525,6 +548,8 @@ void fn_USB(){
     else{
         printf("USB \n");
         printf("more info \n");
+        clear_screen();
+        write_menu_on_screen("USB","","trasnfer","");   
         while(1){
             printf("USB tranfer \n");
             sleep_ms(1000);
@@ -1013,7 +1038,12 @@ int main() {
     {
         if(settings.current_state_menu < NUM_STATES_MENU){
             (*fsm_INIT_DEFAULT[settings.current_state_menu].state_function)();     //call to FSM functions
-            // printf("%d \n",settings.depth);
+            // // printf("%d \n",settings.depth);
+            // init_screen_i2c();
+            // WriteString_Fonts_(0,0,"initialization",font_8x8);
+            // write_menu_on_screen("MENU'","Start Sampling","Settings","");
+
+
         }
         else{
             /* error */
