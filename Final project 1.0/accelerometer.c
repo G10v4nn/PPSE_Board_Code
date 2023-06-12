@@ -4,6 +4,7 @@
 #include "pico/binary_info.h"
 #include "hardware/i2c.h"
 
+#include "datatypes.h"
 #include "accelerometer.h"
 
 const uint8_t ADDRESS = 0x1C;
@@ -20,8 +21,8 @@ const uint8_t REG_DATA_CFG = 0x0E;
 const uint8_t REG_CTRL_REG1 = 0x2A;
 
 // Set the range and precision for the data 
-const uint8_t range_config = 0x01; // 0x00 for ±2g, 0x01 for ±4g, 0x02 for ±8g
-const float count = 2048; // 4096 for ±2g, 2048 for ±4g, 1024 for ±8g
+const uint8_t range_config = 0x02; // 0x00 for ±2g, 0x01 for ±4g, 0x02 for ±8g
+const float count = 1024; // 4096 for ±2g, 2048 for ±4g, 1024 for ±8g
 
 uint8_t buf[2];
 
@@ -82,12 +83,15 @@ void get_accelerometer(struct Data_storage *Data){
     i2c_write_blocking(i2c_default, ADDRESS, &REG_X_MSB, 1, true);
     i2c_read_blocking(i2c_default, ADDRESS, buf, 2, false);
     x_acceleration = mma8451_convert_accel(buf[0] << 6 | buf[1] >> 2);
+    Data->x_acceleration = x_acceleration;
 
     i2c_write_blocking(i2c_default, ADDRESS, &REG_Y_MSB, 1, true);
     i2c_read_blocking(i2c_default, ADDRESS, buf, 2, false);
     y_acceleration = mma8451_convert_accel(buf[0] << 6 | buf[1] >> 2);
+    Data->y_acceleration = y_acceleration; 
 
     i2c_write_blocking(i2c_default, ADDRESS, &REG_Z_MSB, 1, true);
     i2c_read_blocking(i2c_default, ADDRESS, buf, 2, false);
     z_acceleration = mma8451_convert_accel(buf[0] << 6 | buf[1] >> 2);
+    Data->z_acceleration = z_acceleration;
 }

@@ -78,6 +78,8 @@
 
 #include "datatypes.h"
 #include "accelerometer.h"
+#include "temperature.h"
+#include "gps.h"
 #include "screen.c"
 
 #define MAX_SAMPLING_RATE 150
@@ -243,30 +245,20 @@ void init_buttons(){
     // per cambio stato GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL
 }
 
+/* Definite nei .h
+void init_temperature(struct Data_storage *Data){}
+
+void init_accelerometer(struct Data_storage *Data){}
+
+void init_gps(struct Data_storage *Data){}
+*/
+
 void init_screen(){
     init_screen_i2c();
 }
 
-//da togliere e mettere nei file di temperatura
-void init_adc(){
-    adc_init();
-    // Make sure GPIO is high-impedance, no pullups etc
-    adc_gpio_init(26);
-    // Select ADC input 0 (GPIO26)
-    adc_select_input(0);
-    adc_set_clkdiv(500);
-}
-
 void int_screen(){
 
-}
-
-void init_accelerometer(){
-
-}
-
-void init_gps(){
-    
 }
 
 void init_buzzer(){
@@ -282,7 +274,7 @@ void init_hardware(){
     init_enviroment();
     init_buttons();
     init_screen();
-    init_adc();
+    init_temperature();
     init_gps();
     init_accelerometer();
     init_buzzer();
@@ -311,27 +303,13 @@ void print_DATA(struct Data_storage *Data){
     printf("TEMPERATURE: %d Celsius \n", Data->temperature);
 }
 
+/* Definite nei .h
+void get_temperature(struct Data_storage *Data){}
 
-void get_temperature(struct Data_storage *Data){
-    // 12-bit conversion, assume max value == ADC_VREF == 3.3 V
-    const float conversion_factor = 3.3f / (1 << 12);
-    uint16_t result = adc_read();
-    float temperature = (result*conversion_factor - 0.5)/0.01;
-    Data->temperature = temperature;
-    //printf("Raw value: 0x%03x, voltage: %f V\n", result, result * conversion_factor);
-    //printf("Temperature: %f\n", temperature);
+void get_accelerometer(struct Data_storage *Data){}
 
-    Data->temperature = temperature;
-}
-
-void get_accelerometer(struct Data_storage *Data){
-
-}
-
-void get_GPS(struct Data_storage *Data){
-    
-}
-
+void get_gps(struct Data_storage *Data){}
+*/
 
 /*******************************************************************/
 /* state - functioncall link */

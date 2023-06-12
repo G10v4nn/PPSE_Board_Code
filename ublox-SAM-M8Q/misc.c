@@ -78,7 +78,7 @@ int BuildSentence(struct TGPS *GPS, char *TxLine, const char *PayloadID)
     TxLine[Count++] = Hex((CRC >> 4) & 15);
     TxLine[Count++] = Hex(CRC & 15);
   	TxLine[Count++] = '\n';  
-	  TxLine[Count++] = '\0';
+	TxLine[Count++] = '\0';
 	
 	return strlen(TxLine) + 1;
 }

@@ -13,9 +13,12 @@ pico_sdk_init()
 
 add_executable(main
 main.c
+accelerometer.c
+temperature.c
+gps.c
         )
 add_library(screen screen.c)
-target_link_libraries(screen  pico_stdlib hardware_adc hardware_clocks hardware_rosc hardware_rtc hardware_i2c hardware_i2c)
+target_link_libraries(screen  pico_stdlib hardware_adc hardware_clocks hardware_rosc hardware_rtc hardware_i2c)
 
 add_subdirectory(hardware_rosc)
 
