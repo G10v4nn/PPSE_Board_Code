@@ -111,6 +111,7 @@ typedef enum {
     STATE_TEMPERATURA,
     STATE_ACCELEROMETRO,
     STATE_GPS,
+    STATE_SAMPLING_RATE,
     NUM_STATES_SETTINGS
 }State_Settings;
 
@@ -123,7 +124,6 @@ typedef enum {
     STATE_X_ACC,
     STATE_Y_ACC,
     STATE_Z_ACC,
-    STATE_SAMPLING_RATE_ACC,
     NUM_STATES_ACCELEROMETER
 }State_Accelerometer;
 
@@ -134,7 +134,9 @@ typedef struct{
 
 typedef enum {
     // add features
-    STATE_SAMPLING_RATE_GPS,
+    GRADI_1_GPS,
+    GRADI_2_GPS,
+    ALTITUDINE_GPS,
     NUM_STATES_GPS
 }State_GPS;
 
@@ -158,18 +160,20 @@ typedef struct {
     bool start_depth;
     int depth;
     bool final_depth;
+    uint32_t Sampling_Rate;
 
     // accelerometer
     bool Acc_X;
     bool Acc_Y;
     bool Acc_Z;
-    int Acc_Sampling_Rate;
 
     // temperatura
-    int Temp_Sampling_Rate;
+    bool Temp;
 
     // gps
-    int GPS_Sampling_Rate;
+    bool Gradi_1_GPS;
+    bool Gradi_2_GPS;
+    bool Altitudine_GPS;
 
 
     /* data */
@@ -185,24 +189,27 @@ Settings_storage settings = {
     STATE_INIT, // State_Menu current_state_menu;
     STATE_SETTINGS, // State_Function current_state_function;
     STATE_TEMPERATURA, // State_Settings current_state_settings;
-    STATE_SAMPLING_RATE_ACC, // State_Accelerometer current_state_accelerometer;
-    STATE_SAMPLING_RATE_GPS, // State_GPS current_state_GPS;
+    STATE_X_ACC, // State_Accelerometer current_state_accelerometer;
+    ALTITUDINE_GPS, // State_GPS current_state_GPS;
     
     true, // bool start_depth;
     0, // int depth;
     false, // bool final_depth;
+    1000,
 
     // // accelerometer
     true, // bool Acc_X;
     true, // bool Acc_Y;
     true, // bool Acc_Z;
-    100, // int Acc_Sampling_Rate;
 
     // // temperatura
-    100, // int Temp_Sampling_Rate;
+    true, // int Temp_Sampling_Rate;
 
     // // gps
-    100 // int GPS_Sampling_Rate;
+    true, // bool Gradi_1_GPS;
+    true, // bool Gradi_2_GPS;
+    true, // bool Altitudine_GPS;
+
     
 
 };
@@ -247,6 +254,10 @@ void init_adc(){
     adc_set_clkdiv(500);
 }
 
+void int_screen(){
+
+}
+
 void init_accelerometer(){
 
 }
@@ -263,6 +274,7 @@ void init_led(){
 
 }
 
+
 void init_hardware(){
     init_enviroment();
     init_buttons();
@@ -275,13 +287,34 @@ void init_hardware(){
 }
 
 /*******************************************************************/
-/* definizioni delle funzioni di acquisizione dati */
+/* definizioni delle funzioni per l'acquisizione dati */
+void init_Data_storage(struct Data_storage *Data){
+    Data->Hours  = 0;
+    Data->Minutes  = 0;
+    Data->Seconds  = 0;
+    Data->Longitude  = 0.0;
+    Data->Latitude  = 0.0;
+    Data->Altitude  = 0;
+    Data->x_acceleration  = 0;
+    Data->y_acceleration  = 0;
+    Data->z_acceleration  = 0;
+    Data->temperature  = 0;
+}
+
+void print_DATA(struct Data_storage *Data){
+    printf("TIME: %d:%d:%d \n", Data->Hours, Data->Minutes, Data->Seconds);
+    printf("POSITION: Longitude = %0.2f, \t Latitude = %0.2f, \t Altitude = %0.2f \n", Data->Longitude, Data->Latitude, Data->Altitude);
+    printf("ACCELEROMETER: X = %d, \t X = %d, \t X = %d \n", Data->x_acceleration, Data->y_acceleration, Data->z_acceleration);
+    printf("TEMPERATURE: %d Celsius \n", Data->temperature);
+}
+
 
 void get_temperature(struct Data_storage *Data){
     // 12-bit conversion, assume max value == ADC_VREF == 3.3 V
     const float conversion_factor = 3.3f / (1 << 12);
     uint16_t result = adc_read();
     float temperature = (result*conversion_factor - 0.5)/0.01;
+    Data->temperature = temperature;
     //printf("Raw value: 0x%03x, voltage: %f V\n", result, result * conversion_factor);
     //printf("Temperature: %f\n", temperature);
 
@@ -310,13 +343,18 @@ void fn_USB();
 void fn_TEMPERATURA();
 void fn_ACCELEROMETRO();
 void fn_GPS();
+void fn_SAMPLING_RATE();
+
 
 void fn_ACC_X();
 void fn_ACC_Y();
 void fn_ACC_Z();
 void fn_ACC_SAMPLING_RATE();
 
-void fn_GPS_SAMPLING_RATE();
+void fn_GRADI_1_GPS();
+void fn_GRADI_2_GPS();
+void fn_ALTITUDINE_GPS();
+
 
 
 StateMachine_Menu_t fsm_INIT_DEFAULT[] = {
@@ -333,18 +371,21 @@ StateMachine_Function_t fsm_SETTINGS__DATA_EXTRACTIOn_USB[] = {
 StateMachine_Settings_t fsm_SETTINGS[] = {
                       {STATE_TEMPERATURA, fn_TEMPERATURA},
                       {STATE_ACCELEROMETRO, fn_ACCELEROMETRO},
-                      {STATE_GPS, fn_GPS}
+                      {STATE_GPS, fn_GPS},
+                      {STATE_SAMPLING_RATE, fn_SAMPLING_RATE},
+
 };
 
 StateMachine_Accelerometer_t fsm_Accelerometer[] = {
                       {STATE_X_ACC, fn_ACC_X},
                       {STATE_Y_ACC, fn_ACC_Y},
                       {STATE_Z_ACC, fn_ACC_Z},
-                      {STATE_SAMPLING_RATE_ACC, fn_ACC_SAMPLING_RATE }
 };
 
 StateMachine_GPS_t fsm_GPS[] = {
-                      {STATE_SAMPLING_RATE_GPS, fn_GPS_SAMPLING_RATE},
+                      {GRADI_1_GPS,fn_GRADI_1_GPS},
+                      {GRADI_2_GPS,fn_GRADI_2_GPS},
+                      {ALTITUDINE_GPS,fn_ALTITUDINE_GPS}
 };
 
 
@@ -426,17 +467,22 @@ void fn_SETTINGS(){
         case STATE_GPS:
             printf("\t STATE_GPS \n");
             break;
-        }
+        case STATE_SAMPLING_RATE:
+            printf("\t STATE_SAMPLING_RATE \n");
+            break;
+        } 
         // mostra a schermo la selezione tra acc/temp/GPS
     }
 
 
 }
+static bool started = false;
+bool interrompi = false;
+bool exit_usb_mode = false;
 
 void fn_DATA_EXTRACTION(){
     //default values for this state
         // USB.trasnfer = false
-
     settings.final_depth = true;
     //gestisce tutte le varie cose di STATE_DATA_EXTRACTION
     if(settings.depth > 1){
@@ -446,7 +492,18 @@ void fn_DATA_EXTRACTION(){
 
         printf("DATA EXTRACTION\n");
         printf("more info \n");
-
+        struct Data_storage Data;
+        init_Data_storage(&Data);        
+        if(!started){
+            started = true;
+            get_temperature(&Data);
+            get_accelerometer(&Data);
+            get_GPS(&Data);
+            print_DATA(&Data);
+            sleep_ms(settings.Sampling_Rate);
+            started = false;
+            interrompi = true;
+        }
         // if(data extraction started == false)
             // data extraction start => 
                 // - set all the parameters
@@ -468,11 +525,15 @@ void fn_USB(){
     else{
         printf("USB \n");
         printf("more info \n");
-
-        // if(!USB.transfer)
-            // USB.transfer = true
-            // call USB function/transfer 
-            // while(1){}
+        while(1){
+            printf("USB tranfer \n");
+            sleep_ms(1000);
+            if(exit_usb_mode){
+                interrompi = true;
+                exit_usb_mode = false;
+                break;
+            }
+        }
  
         // mostra a schermo enable USB transfer while you are in this menù
         // da aggiungere che quando si esce da questo selezione l'usb tasnfer si blocca
@@ -487,7 +548,7 @@ void fn_TEMPERATURA(){
     settings.final_depth = true;
     printf("TEMPERATURA \n");
     printf("more info:\n");
-    printf("sampling rate:  %d \n",tmp_settings.Temp_Sampling_Rate);
+    printf("sampling rate:  %d \n",tmp_settings.Temp);
     //gestisce tutte le varie impostazioni di TEMPERATURA
     // mostrare a schermo
     // TITOLO: SAMPLING RATE
@@ -519,9 +580,6 @@ void fn_ACCELEROMETRO(){
         case STATE_Z_ACC:
             printf("\t STATE_Z_ACC \n");
             break;
-        case STATE_SAMPLING_RATE_ACC:
-            printf("\t case STATE_SAMPLING_RATE_ACC \n");
-            break;
         }
         // mostrare a schermo il menù con i vari attributi
     }
@@ -543,26 +601,53 @@ void fn_GPS(){
         printf("selettore su:");
         switch (settings.current_state_GPS)
         {
-        case STATE_SAMPLING_RATE_GPS:
-            printf("\t case STATE_SAMPLING_RATE_GPS \n");
+        case GRADI_1_GPS:
+            printf("\t case GRADI_1_GPS \n");
+            break;
+        case GRADI_2_GPS:
+            printf("\t case GRADI_2_GPS \n");
+            break;
+        case ALTITUDINE_GPS:
+            printf("\t case ALTITUDINE_GPS \n");
             break;
         }
         // mostrare a schermo il menù con i vari attributi
     }
 }
 
+void fn_SAMPLING_RATE(){
+    settings.final_depth = true;
+    printf("SAMPLING_RATE \n");
+    printf("more info:\n");
+    printf("sampling rate:  %d  \n",tmp_settings.Sampling_Rate);
+    // mostra a schermo il valore temporaneo di SAMPLING_RATE
+}
+
 
 /*******************************************************************/
 /* state GPS - attribute */
 
-void fn_GPS_SAMPLING_RATE(){
+void fn_GRADI_1_GPS(){
     settings.final_depth = true;
-    printf("GPS \n");
+    printf("GPS - GRADI_1 \n");
     printf("more info:\n");
-    printf("sampling rate:  %d \n",tmp_settings.GPS_Sampling_Rate);
+    printf("sampling rate:  %d \n",tmp_settings.Gradi_1_GPS);
     // mostra a schermo il valore temporaneo di SAMPLING_RATE
 }
-
+void fn_GRADI_2_GPS(){
+    settings.final_depth = true;
+    printf("GPS - GRADI_2 \n");
+    printf("more info:\n");
+    printf("sampling rate:  %d \n",tmp_settings.Gradi_2_GPS);
+    // mostra a schermo il valore temporaneo di SAMPLING_RATE
+}
+void fn_ALTITUDINE_GPS(){
+    settings.final_depth = true;
+    printf("GPS - GRADI_1 \n");
+    printf("more info:\n");
+    printf("sampling rate:  %d \n",tmp_settings.Altitudine_GPS);
+    // mostra a schermo il valore temporaneo di SAMPLING_RATE
+}
 
 /*******************************************************************/
 /* state ACC - attribute */
@@ -587,13 +672,6 @@ void fn_ACC_Z(){
     printf("more info:\n");
     printf("Z(=0 if not enabled, =1 if enabled):  %d \n",tmp_settings.Acc_Z);
     // mostra a schermo il valore temporaneo di z (ENABLE OR DISABLE)
-}
-void fn_ACC_SAMPLING_RATE(){
-    settings.final_depth = true;
-    printf("ACCELEROMETER \n");
-    printf("more info:\n");
-    printf("sampling rate:  %d  \n",tmp_settings.Acc_Sampling_Rate);
-    // mostra a schermo il valore temporaneo di SAMPLING_RATE
 }
 
 
@@ -700,70 +778,44 @@ void up_button(){
             case STATE_SETTINGS:
                 switch (settings.current_state_settings){
                     case STATE_TEMPERATURA:
-                        if(tmp_settings.Temp_Sampling_Rate < MAX_SAMPLING_RATE){
-                            tmp_settings.Temp_Sampling_Rate++;
-                            // call buzzer(normal sound)
-                        }
-                        else {
-                            // call buzzer(error)
-                        }                
+                        tmp_settings.Temp = 1 - tmp_settings.Temp;
                     break;
                     case STATE_ACCELEROMETRO:
                         switch (settings.current_state_accelerometer){
                             case STATE_X_ACC:
-                                if(tmp_settings.Acc_X){
-                                    tmp_settings.Acc_X = false;
-                                    // call buzzer(normal sound)
-                                }
-                                else{
-                                    tmp_settings.Acc_X = true;
-                                    // call buzzer(normal sound)
-                                }
-                            break;
+                                tmp_settings.Acc_X = 1 - tmp_settings.Acc_X;
+                                break;
                             case STATE_Y_ACC:
-                                if(tmp_settings.Acc_Y){
-                                    tmp_settings.Acc_Y = false;
-                                    // call buzzer(normal sound)
-                                }
-                                else{
-                                    tmp_settings.Acc_Y = true;
-                                    // call buzzer(normal sound)
-                                }
-                            break;
+                                tmp_settings.Acc_Y = 1 - tmp_settings.Acc_Y;
+                                break;
                             case STATE_Z_ACC:
-                                if(tmp_settings.Acc_Z){
-                                    tmp_settings.Acc_Z = false;
-                                    // call buzzer(normal sound)
-                                }
-                                else{
-                                    tmp_settings.Acc_Z = true;
-                                    // call buzzer(normal sound)
-                                }
-                            break;
-                            case STATE_SAMPLING_RATE_ACC:
-                                if(tmp_settings.Acc_Sampling_Rate < MAX_SAMPLING_RATE){
-                                    tmp_settings.Acc_Sampling_Rate++;
-                                    // call buzzer(normal sound)
-                                }
-                                else {
-                                    // call buzzer(error)
-                                }
-                            break;                            
+                                tmp_settings.Acc_Z = 1 - tmp_settings.Acc_Z;
+                                break;                          
                         }
                     break;
                     case STATE_GPS:
                         switch (settings.current_state_GPS){
-                            case STATE_SAMPLING_RATE_ACC:
-                                if(tmp_settings.GPS_Sampling_Rate < MAX_SAMPLING_RATE){
-                                    tmp_settings.GPS_Sampling_Rate++;
-                                    // call buzzer(normal sound)
-                                }
-                                else {
-                                    // call buzzer(error)
-                                }
+                            case GRADI_1_GPS:
+                                tmp_settings.Gradi_1_GPS = 1 - tmp_settings.Gradi_1_GPS;
+                                break;
+                            case GRADI_2_GPS:
+                                tmp_settings.Gradi_2_GPS = 1 - tmp_settings.Gradi_2_GPS;
+                                break;
+                            case ALTITUDINE_GPS:
+                                tmp_settings.Altitudine_GPS = 1 - tmp_settings.Altitudine_GPS;
+                                break;                        
                         }                 
-                    break;
-                }
+                        break;
+                    case STATE_SAMPLING_RATE:
+                        if(tmp_settings.Temp < MAX_SAMPLING_RATE){
+                            tmp_settings.Sampling_Rate++;
+                                // call buzzer(normal sound)
+                        }
+                        else {
+                            // call buzzer(error)
+                        }
+                        break;
+                    }
             break;
         }
     }
@@ -831,69 +883,43 @@ void down_button(){
             case STATE_SETTINGS:
                 switch (settings.current_state_settings){
                     case STATE_TEMPERATURA:
-                        if(tmp_settings.Temp_Sampling_Rate > 0){
-                            tmp_settings.Temp_Sampling_Rate--;
+                        tmp_settings.Temp = 1 - tmp_settings.Temp;
+                    break;
+                    case STATE_ACCELEROMETRO:
+                        switch (settings.current_state_accelerometer){
+                            case STATE_X_ACC:
+                                tmp_settings.Acc_X = 1 - tmp_settings.Acc_X;
+                                break;
+                            case STATE_Y_ACC:
+                                tmp_settings.Acc_Y = 1 - tmp_settings.Acc_Y;
+                                break;
+                            case STATE_Z_ACC:
+                                tmp_settings.Acc_Z = 1 - tmp_settings.Acc_Z;
+                                break;                          
+                        }
+                        break;
+                    case STATE_GPS:
+                        switch (settings.current_state_GPS){
+                            case GRADI_1_GPS:
+                                tmp_settings.Gradi_1_GPS = 1 - tmp_settings.Gradi_1_GPS;
+                                break;
+                            case GRADI_2_GPS:
+                                tmp_settings.Gradi_2_GPS = 1 - tmp_settings.Gradi_2_GPS;
+                                break;
+                            case ALTITUDINE_GPS:
+                                tmp_settings.Altitudine_GPS = 1 - tmp_settings.Altitudine_GPS;
+                                break;                        
+                        }                 
+                        break;
+                    case STATE_SAMPLING_RATE:
+                        if(tmp_settings.Temp > 1){
+                            tmp_settings.Sampling_Rate--;
                                 // call buzzer(normal sound)
                         }
                         else {
                             // call buzzer(error)
                         }
                         break;
-                    case STATE_ACCELEROMETRO:
-                        switch (settings.current_state_accelerometer){
-                            case STATE_X_ACC:
-                                if(tmp_settings.Acc_X){
-                                    tmp_settings.Acc_X = false;
-                                    // call buzzer(normal sound)
-                                }
-                                else{
-                                    tmp_settings.Acc_X = true;
-                                    // call buzzer(normal sound)
-                                }
-                            break;
-                            case STATE_Y_ACC:
-                                if(tmp_settings.Acc_Y){
-                                    tmp_settings.Acc_Y = false;
-                                    // call buzzer(normal sound)
-                                }
-                                else{
-                                    tmp_settings.Acc_Y = true;
-                                    // call buzzer(normal sound)
-                                }
-                            break;
-                            case STATE_Z_ACC:
-                                if(tmp_settings.Acc_Z){
-                                    tmp_settings.Acc_Z = false;
-                                    // call buzzer(normal sound)
-                                }
-                                else{
-                                    tmp_settings.Acc_Z = true;
-                                    // call buzzer(normal sound)
-                                }
-                            break;
-                            case STATE_SAMPLING_RATE_ACC:
-                                if(tmp_settings.Acc_Sampling_Rate > 0){
-                                    tmp_settings.Acc_Sampling_Rate--;
-                                    // call buzzer(normal sound)
-                                }
-                                else {
-                                    // call buzzer(error)
-                                }
-                            break;                            
-                        }
-                    break;
-                    case STATE_GPS:
-                        switch (settings.current_state_GPS){
-                            case STATE_SAMPLING_RATE_ACC:
-                                if(tmp_settings.GPS_Sampling_Rate > 0){
-                                    tmp_settings.GPS_Sampling_Rate--;
-                                // call buzzer(normal sound)
-                            }
-                            else {
-                                // call buzzer(error)
-                            }
-                        }                 
-                    break;
                 }
             break;
         }
@@ -923,9 +949,8 @@ uint64_t get_time(void) {
 }
 
 /****************** interrput handler *************/
-bool interrompi = false;
 
-#define time_interval_between_button_push 1000000 
+#define time_interval_between_button_push 300000 
 static uint64_t time_bt_up = 0;
 static uint64_t time_bt_down = 0;
 static uint64_t time_bt_right = 0;
@@ -938,6 +963,7 @@ void buttons_callback(uint gpio, uint32_t events) {
     case 22:
         difference = time - time_bt_up;
         if(difference > time_interval_between_button_push){
+            exit_usb_mode = true;
             interrompi = true;
             time_bt_up = time;
             up_button();
@@ -947,6 +973,7 @@ void buttons_callback(uint gpio, uint32_t events) {
     case 23:
         difference = time - time_bt_down;
         if(difference > time_interval_between_button_push){
+            exit_usb_mode = true;
             interrompi = true;
             time_bt_down = time;
             down_button();
@@ -956,6 +983,7 @@ void buttons_callback(uint gpio, uint32_t events) {
     case 24:
         difference = time - time_bt_right;
         if(difference > time_interval_between_button_push){
+            exit_usb_mode = true;
             interrompi = true;
             time_bt_right = time;
             rigth_button();
@@ -965,6 +993,7 @@ void buttons_callback(uint gpio, uint32_t events) {
     case 25:
         difference = time - time_bt_left;
         if(difference > time_interval_between_button_push){
+            exit_usb_mode = true;
             interrompi = true;
             time_bt_left = time;
             left_button();

@@ -10,16 +10,17 @@ project(my_project)
 pico_sdk_init()
 
 # rest of your project
+add_subdirectory(pico-ssd1306)
 
 add_executable(screen
         main.cpp
         )
 
-add_subdirectory(pico-ssd1306)
 
 
 # pull in common dependencies
 target_link_libraries(screen pico_stdlib hardware_i2c pico_ssd1306)
+
 
 # enable usb output, disable uart output
 pico_enable_stdio_usb(screen 1)
