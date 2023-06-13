@@ -38,6 +38,7 @@
         "config_autogen.h": "c",
         "error.h": "c",
         "binary_info.h": "c",
-        "io_bank0.h": "c"
+        "io_bank0.h": "c",
+        "clocks.h": "c"
     }
 }

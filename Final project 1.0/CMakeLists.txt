@@ -16,6 +16,7 @@ main.c
 accelerometer.c
 temperature.c
 gps.c
+buzzer.c
         )
 add_library(screen screen.c)
 target_link_libraries(screen  pico_stdlib hardware_adc hardware_clocks hardware_rosc hardware_rtc hardware_i2c)
@@ -23,7 +24,7 @@ target_link_libraries(screen  pico_stdlib hardware_adc hardware_clocks hardware_
 add_subdirectory(hardware_rosc)
 
 # pull in common dependencies
-target_link_libraries(main pico_stdlib hardware_adc hardware_clocks hardware_rosc hardware_rtc hardware_i2c hardware_i2c screen)
+target_link_libraries(main pico_stdlib hardware_adc hardware_clocks hardware_rosc hardware_rtc hardware_i2c hardware_i2c hardware_pwm screen)
 
 # enable usb output, disable uart output
 pico_enable_stdio_usb(main 1)
