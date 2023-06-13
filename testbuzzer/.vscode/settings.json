@@ -37,6 +37,7 @@
         "version.h": "c",
         "config_autogen.h": "c",
         "error.h": "c",
-        "binary_info.h": "c"
+        "binary_info.h": "c",
+        "buzzer.h": "c"
     }
 }

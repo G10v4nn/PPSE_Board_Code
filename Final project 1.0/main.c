@@ -80,6 +80,8 @@
 #include "accelerometer.h"
 #include "temperature.h"
 #include "gps.h"
+#include "buzzer.h"
+
 #include "screen.c"
 
 #define MAX_SAMPLING_RATE 150

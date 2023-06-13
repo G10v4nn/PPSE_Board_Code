@@ -11,19 +11,20 @@ pico_sdk_init()
 
 # rest of your project
 
-add_executable(hello_pwm
-        hello_pwm.c
+add_executable(buzzertest
+        main.c
+	buzzer.c
         )
 
 # pull in common dependencies and additional pwm hardware support
-target_link_libraries(hello_pwm pico_stdlib hardware_pwm)
+target_link_libraries(buzzertest pico_stdlib hardware_gpio hardware_pwm hardware_clocks)
 
 # enable usb output, disable uart output
-pico_enable_stdio_usb(hello_pwm 1)
-pico_enable_stdio_uart(hello_pwm 0)
+pico_enable_stdio_usb(buzzertest 1)
+pico_enable_stdio_uart(buzzertest 0)
 
 # create map/bin/hex/uf2 file etc.
-pico_add_extra_outputs(hello_pwm)
+pico_add_extra_outputs(buzzertest)
 
 
 
