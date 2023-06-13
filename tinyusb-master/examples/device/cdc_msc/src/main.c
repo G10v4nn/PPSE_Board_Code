@@ -106,7 +106,7 @@ void cdc_task(void)
 {
   // connected() check for DTR bit
   // Most but not all terminal client set this when making connection
-  // if ( tud_cdc_connected() )
+  if ( tud_cdc_connected() )
   {
     // connected and there are data available
     if ( tud_cdc_available() )
