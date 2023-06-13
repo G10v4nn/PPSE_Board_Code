@@ -40,6 +40,8 @@
         "binary_info.h": "c",
         "io_bank0.h": "c",
         "clocks.h": "c",
-        "screen.h": "c"
+        "screen.h": "c",
+        "ssd1306_font.h": "c",
+        "8x8_font.h": "c"
     }
 }

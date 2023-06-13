@@ -83,12 +83,15 @@
 #include "gps.h"
 #include "buzzer.h"
 #include "screen.h"
+#include "led.h"
 #include "FSMtypes.h"
 
 #define MAX_SAMPLING_RATE 150
 
 /*******************************************************************/
 /* definizioni delle funzioni di inizializzazione */
+
+void buttons_callback(uint gpio, uint32_t events);
 
 void init_enviroment(){
     stdio_init_all();
@@ -204,12 +207,11 @@ void fn_INIT(){
     // inizializziamo tutti i vari parametri come default
     init_hardware();
     clear_screen();
-    WriteString_Fonts_(4,0,"initialization",font_8x8);
-    WriteString_Fonts_(30,50,"done",font_12x16);
+    WriteString_Fonts_8x8(4,0,"initialization");
+    WriteString_Fonts_12x16(30,50,"done");
     printf("initialization done \n");
     settings.current_state_menu = STATE_DEFAULT;
     tmp_settings = settings;
-
 }
 
 void fn_DEFAULT(){
@@ -844,7 +846,7 @@ int main() {
             (*fsm_INIT_DEFAULT[settings.current_state_menu].state_function)();     //call to FSM functions
             // // printf("%d \n",settings.depth);
             // init_screen();
-            // WriteString_Fonts_(0,0,"initialization",font_8x8);
+            // WriteString_Fonts_8x8(0,0,"initialization");
             // write_menu_on_screen("MENU'","Start Sampling","Settings","");
         }
         else{

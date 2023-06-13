@@ -15,7 +15,7 @@ uint channel_num;
 uint32_t m_div = 0, m_top = 0;
 
 
-void buzzer_init()
+void init_buzzer()
 {
     gpio_set_function(BUZ_PIN, GPIO_FUNC_PWM);
 

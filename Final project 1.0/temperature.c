@@ -12,7 +12,7 @@
 #include "datatypes.h"
 #include "temperature.h"
 
-void temperature_init(){
+void init_temperature(){
     adc_init();
     // Make sure GPIO is high-impedance, no pullups etc
     adc_gpio_init(26);

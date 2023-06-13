@@ -25,16 +25,6 @@ char Hex(char Character)
 	return HexTable[Character];
 }
 
-uint64_t get_time(void)
-{
-	// Returns result in us
-
-    // Reading low latches the high value
-    uint32_t lo = timer_hw->timelr;
-    uint32_t hi = timer_hw->timehr;
-    return ((uint64_t) hi << 32u) | lo;
-}
-
 int BuildSentence(struct TGPS *GPS, char *TxLine, const char *PayloadID)
 {
 	static unsigned int SentenceCounter=0;

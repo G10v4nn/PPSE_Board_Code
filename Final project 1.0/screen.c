@@ -363,9 +363,6 @@ static void WriteString_Fonts(uint8_t *buf, int16_t x, int16_t y, char *str, con
     }
 }
 
-
-
-
 #endif
 #if !defined(i2c_default) || !defined(PICO_DEFAULT_I2C_SDA_PIN) || !defined(PICO_DEFAULT_I2C_SCL_PIN)
 #warning i2c / SSD1306_i2d example requires a board with I2C pins
@@ -441,6 +438,16 @@ void WriteString_Fonts_(int16_t x, int16_t y, char *str, const unsigned char *fo
     WriteString_Fonts(buf,x,y,str,font);
     render(buf, &frame_area);
 
+}
+
+void WriteString_Fonts_8x8(int16_t x, int16_t y, char *str){
+    WriteString_Fonts(buf,x,y,str,font_8x8);
+    render(buf, &frame_area);
+}
+
+void WriteString_Fonts_12x16(int16_t x, int16_t y, char *str){
+    WriteString_Fonts(buf,x,y,str,font_12x16);
+    render(buf, &frame_area);
 }
 
 // int main_screen() {
