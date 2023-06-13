@@ -257,10 +257,6 @@ void init_screen(){
     init_screen_i2c();
 }
 
-void int_screen(){
-
-}
-
 void init_buzzer(){
 
 }
@@ -498,7 +494,7 @@ void fn_DATA_EXTRACTION(){
             started = true;
             get_temperature(&Data);
             get_accelerometer(&Data);
-            get_GPS(&Data);
+            get_gps(&Data);
             print_DATA(&Data);
             // da modificare
             sleep_ms(settings.Sampling_Rate);

@@ -247,6 +247,6 @@ int main()
 	while (true)
 	{
 		check_gps(&GPS);
-		sleep_ms(1000);
+		sleep_ms(500);
 	}
 }
