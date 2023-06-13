@@ -34,3 +34,21 @@ int take_data_from_TEMP(){
 
 }
 
+cambiare sensibilità bottoni per sampling rate
+
+buzzer
+led
+schermo da finire
+USB
+salvataggio stringa
+
+
+Esempio sprintf:
+void print_register(ICM_20948_Reg_Addr_e reg_address) {
+	char buff[DIM];
+	memset(buff, 0x00, DIM*sizeof(uint8_t));
+	ret = HAL_I2C_Mem_Read(&hi2c1, IMU_ADDR, reg_address, 1 , (uint8_t*)buff, 1, HAL_MAX_DELAY);
+	while(HAL_I2C_IsDeviceReady(&hi2c1, IMU_ADDR, 1, HAL_MAX_DELAY) != HAL_OK);
+	ret = sprintf((char*)buff, "data reg: 0x%x \r\n", buff[0]);
+	HAL_UART_Transmit(&huart2, (uint8_t*)buff, strlen((char*)buff), HAL_MAX_DELAY);
+}

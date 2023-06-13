@@ -81,8 +81,7 @@
 #include "temperature.h"
 #include "gps.h"
 #include "buzzer.h"
-
-#include "screen.c"
+#include "screen.h"
 
 #define MAX_SAMPLING_RATE 150
 
@@ -192,7 +191,6 @@ typedef struct {
 
 Settings_storage settings = {
     
-
     STATE_INIT, // State_Menu current_state_menu;
     STATE_SETTINGS, // State_Function current_state_function;
     STATE_TEMPERATURA, // State_Settings current_state_settings;
@@ -217,13 +215,9 @@ Settings_storage settings = {
     true, // bool Gradi_2_GPS;
     true, // bool Altitudine_GPS;
 
-    
-
 };
 
-Settings_storage tmp_settings = {
-
-};
+Settings_storage tmp_settings = { };
 
 
 /*******************************************************************/
@@ -253,20 +247,18 @@ void init_temperature(struct Data_storage *Data){}
 void init_accelerometer(struct Data_storage *Data){}
 
 void init_gps(struct Data_storage *Data){}
+
+void init_buzzer(){}
+
+void init_screen(){}
 */
 
-void init_screen(){
-    init_screen_i2c();
-}
+//modificare led
 
-void init_buzzer(){
-
-}
 
 void init_led(){
 
 }
-
 
 void init_hardware(){
     init_enviroment();
@@ -449,22 +441,22 @@ void fn_SETTINGS(){
         case STATE_TEMPERATURA:
             printf("\t STATE_TEMPERATURA \n");
             clear_screen();
-            write_menu_on_screen("Settings","Accelerometer","Temperature","");
+            write_menu_on_screen("SETTINGS","Accelerometer","Temperature","");
             break;
         case STATE_ACCELEROMETRO:
             printf("\t STATE_ACCELEROMETRO \n");
             clear_screen();
-            write_menu_on_screen("Settings","GPS","Accelerometer","Temperature");
+            write_menu_on_screen("SETTINGS","GPS","Accelerometer","Temperature");
             break;
         case STATE_GPS:
             printf("\t STATE_GPS \n");
             clear_screen();
-            write_menu_on_screen("Settings","Sampling rate","GPS","Accelerometer");
+            write_menu_on_screen("SETTINGS","Sampling rate","GPS","Accelerometer");
             break;
         case STATE_SAMPLING_RATE:
             printf("\t STATE_SAMPLING_RATE \n");
             clear_screen();
-            write_menu_on_screen("Settings","","Sampling rate","GPS");
+            write_menu_on_screen("SETTINGS","","Sampling rate","GPS");
             break;
         } 
         // mostra a schermo la selezione tra acc/temp/GPS

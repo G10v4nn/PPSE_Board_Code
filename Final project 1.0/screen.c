@@ -16,6 +16,8 @@
 #include "Fonts/16x32_font.h"
 #include "Fonts/5x8_font.h"
 #include "Fonts/8x8_font.h"
+
+#include "screen.h"
 /* Example code to talk to an SSD1306-based OLED display
 
    The SSD1306 is an OLED/PLED driver chip, capable of driving displays up to
@@ -378,7 +380,7 @@ struct render_area frame_area = {
 
 uint8_t buf[SSD1306_BUF_LEN];
 
-void init_screen_i2c(){
+void init_screen(){
 
     // useful information for picotool
     bi_decl(bi_2pins_with_func(PICO_DEFAULT_I2C_SDA_PIN, PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C));

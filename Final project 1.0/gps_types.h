@@ -1,8 +1,6 @@
 #ifndef GPSTYPES_INCLUDED
 #define GPSTYPES_INCLUDED
 
-typedef enum {fmIdle, fmLaunched, fmDescending, fmLanding, fmLanded} TFlightMode;
-
 struct TGPS
 {
 	long Time;							// Time as read from GPS, as an integer but 12:13:14 is 121314
@@ -19,7 +17,6 @@ struct TGPS
 	float ExternalTemperature;
 	float Pressure;
 	float Humidity;
-	TFlightMode FlightMode;
 	float PredictedLongitude, PredictedLatitude;
 	float CDA;
 	int UseHostPosition;
