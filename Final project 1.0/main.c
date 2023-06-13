@@ -83,148 +83,12 @@
 #include "gps.h"
 #include "buzzer.h"
 #include "screen.h"
+#include "FSMtypes.h"
 
 #define MAX_SAMPLING_RATE 150
 
-/******************************************************************
-* definition of the Finite State Machine structure */
-
-typedef enum{
-    STATE_INIT,
-    STATE_DEFAULT,
-    NUM_STATES_MENU
-}State_Menu;
-
-typedef struct{
-    State_Menu state;
-    void (*state_function)(void);
-} StateMachine_Menu_t;
-
-
-typedef enum {
-    STATE_SETTINGS,
-    STATE_DATA_EXTRACTION,
-    STATE_USB,
-    NUM_STATES_FUNCTION
-}State_Function;
-
-typedef struct{
-    State_Function state;
-    void (*state_function)(void);
-} StateMachine_Function_t;
-
-
-typedef enum {
-    STATE_TEMPERATURA,
-    STATE_ACCELEROMETRO,
-    STATE_GPS,
-    STATE_SAMPLING_RATE,
-    NUM_STATES_SETTINGS
-}State_Settings;
-
-typedef struct{
-    State_Settings state;
-    void (*state_function)(void);
-} StateMachine_Settings_t;
-
-typedef enum {
-    STATE_X_ACC,
-    STATE_Y_ACC,
-    STATE_Z_ACC,
-    NUM_STATES_ACCELEROMETER
-}State_Accelerometer;
-
-typedef struct{
-    State_Accelerometer state;
-    void (*state_function)(void);
-} StateMachine_Accelerometer_t;
-
-typedef enum {
-    // add features
-    GRADI_1_GPS,
-    GRADI_2_GPS,
-    ALTITUDINE_GPS,
-    NUM_STATES_GPS
-}State_GPS;
-
-typedef struct{
-    State_GPS state;
-    void (*state_function)(void);
-} StateMachine_GPS_t;
-
-
-/*******************************************************************/
-/* Define struct as data storage of all settings */
-
-typedef struct {
-    /* variables to hold current state */
-    State_Menu current_state_menu;
-    State_Function current_state_function;
-    State_Settings current_state_settings;
-    State_Accelerometer current_state_accelerometer;
-    State_GPS current_state_GPS;
-
-    bool start_depth;
-    int depth;
-    bool final_depth;
-    uint32_t Sampling_Rate;
-
-    // accelerometer
-    bool Acc_X;
-    bool Acc_Y;
-    bool Acc_Z;
-
-    // temperatura
-    bool Temp;
-
-    // gps
-    bool Gradi_1_GPS;
-    bool Gradi_2_GPS;
-    bool Altitudine_GPS;
-
-
-    /* data */
-} Settings_storage;
-
-
-/*******************************************************************/
-/* definizioni delle variabili globali */
-
-Settings_storage settings = {
-    
-    STATE_INIT, // State_Menu current_state_menu;
-    STATE_SETTINGS, // State_Function current_state_function;
-    STATE_TEMPERATURA, // State_Settings current_state_settings;
-    STATE_X_ACC, // State_Accelerometer current_state_accelerometer;
-    ALTITUDINE_GPS, // State_GPS current_state_GPS;
-    
-    true, // bool start_depth;
-    0, // int depth;
-    false, // bool final_depth;
-    1000,
-
-    // // accelerometer
-    true, // bool Acc_X;
-    true, // bool Acc_Y;
-    true, // bool Acc_Z;
-
-    // // temperatura
-    true, // int Temp_Sampling_Rate;
-
-    // // gps
-    true, // bool Gradi_1_GPS;
-    true, // bool Gradi_2_GPS;
-    true, // bool Altitudine_GPS;
-
-};
-
-Settings_storage tmp_settings = { };
-
-
 /*******************************************************************/
 /* definizioni delle funzioni di inizializzazione */
-
-void buttons_callback(uint gpio, uint32_t events);
 
 void init_enviroment(){
     stdio_init_all();
@@ -242,11 +106,6 @@ void init_buttons(){
     // per cambio stato GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL
 }
 
-//modificare led
-void init_led(){
-
-}
-
 void init_hardware(){
     init_enviroment();
     init_buttons();
@@ -260,6 +119,7 @@ void init_hardware(){
 
 /*******************************************************************/
 /* definizioni delle funzioni per l'acquisizione dati */
+
 void init_Data_storage(struct Data_storage *Data){
     Data->Hours  = 0;
     Data->Minutes  = 0;
@@ -304,8 +164,6 @@ void fn_ACC_SAMPLING_RATE();
 void fn_GRADI_1_GPS();
 void fn_GRADI_2_GPS();
 void fn_ALTITUDINE_GPS();
-
-
 
 StateMachine_Menu_t fsm_INIT_DEFAULT[] = {
     {STATE_INIT, fn_INIT},
@@ -443,6 +301,7 @@ void fn_SETTINGS(){
 
 
 }
+
 static bool started = false;
 bool interrompi = false;
 bool exit_usb_mode = false;
@@ -454,9 +313,7 @@ void fn_DATA_EXTRACTION(){
     //gestisce tutte le varie cose di STATE_DATA_EXTRACTION
     if(settings.depth > 1){
         // errore, DATA_EXTRACTION non ha questa profondità
-    }
-    else{
-
+    }else{
         printf("DATA EXTRACTION\n");
         printf("more info \n");
         struct Data_storage Data;
@@ -496,7 +353,7 @@ void fn_USB(){
         printf("USB \n");
         printf("more info \n");
         clear_screen();
-        write_menu_on_screen("USB","","trasnfer","");   
+        write_menu_on_screen("USB","","transfer","");   
         while(1){
             printf("USB tranfer \n");
             sleep_ms(1000);
@@ -647,14 +504,9 @@ void fn_ACC_Z(){
 }
 
 
+/*******************************************************************/
+/* button functions */
 
-
-
-/**************************************** buttons *************************
- * 
- * 
- * 
-*/
 void left_button(){
     if(settings.final_depth){
         // call buzzer(discard settings)
@@ -899,18 +751,20 @@ void down_button(){
 }
 
 
-/*************************** sleep mode **************************/
+/*******************************************************************/
+/* sleep mode */
+
 void sleep_mode() {
-// We should have already called the sleep_run_from_dormant_source function
-// assert(dormant_source_valid(_dormant_source));
-// Turn off all clocks when in sleep mode except for RTC
-clocks_hw->sleep_en0 = CLOCKS_SLEEP_EN0_CLK_RTC_RTC_BITS;
-clocks_hw->sleep_en1 = 0x0;
-uint save = scb_hw->scr;
-// Enable deep sleep at the proc
-scb_hw->scr = save | M0PLUS_SCR_SLEEPDEEP_BITS;
-// Go to sleep
-__wfi();
+    // We should have already called the sleep_run_from_dormant_source function
+    // assert(dormant_source_valid(_dormant_source));
+    // Turn off all clocks when in sleep mode except for RTC
+    clocks_hw->sleep_en0 = CLOCKS_SLEEP_EN0_CLK_RTC_RTC_BITS;
+    clocks_hw->sleep_en1 = 0x0;
+    uint save = scb_hw->scr;
+    // Enable deep sleep at the proc
+    scb_hw->scr = save | M0PLUS_SCR_SLEEPDEEP_BITS;
+    // Go to sleep
+    __wfi();
 }
 
 uint64_t get_time(void) {
@@ -920,13 +774,16 @@ uint64_t get_time(void) {
     return ((uint64_t) hi << 32u) | lo;
 }
 
-/****************** interrput handler *************/
+
+/*******************************************************************/
+/* interrput handler */
 
 #define time_interval_between_button_push 300000 
 static uint64_t time_bt_up = 0;
 static uint64_t time_bt_down = 0;
 static uint64_t time_bt_right = 0;
 static uint64_t time_bt_left = 0;
+
 void buttons_callback(uint gpio, uint32_t events) {
     uint64_t time = time_us_64();
     uint64_t difference = 100000;
@@ -989,8 +846,6 @@ int main() {
             // init_screen();
             // WriteString_Fonts_(0,0,"initialization",font_8x8);
             // write_menu_on_screen("MENU'","Start Sampling","Settings","");
-
-
         }
         else{
             /* error */
