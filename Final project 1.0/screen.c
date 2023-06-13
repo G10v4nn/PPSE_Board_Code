@@ -449,32 +449,4 @@ void WriteString_Fonts_12x16(int16_t x, int16_t y, char *str){
     WriteString_Fonts(buf,x,y,str,font_12x16);
     render(buf, &frame_area);
 }
-
-// int main_screen() {
-//     stdio_init_all();
-//     init_screen_i2c();
-
-//     set_and_show_menu("titolo", "opz1","sel","opz2");
-//     // Test the display invert function
-//     sleep_ms(3000);
-//     SSD1306_send_cmd(SSD1306_SET_INV_DISP);
-//     sleep_ms(3000);
-//     SSD1306_send_cmd(SSD1306_SET_NORM_DISP);
-
-//     bool pix = true;
-//     for (int i = 0; i < 2;i++) {
-//         for (int x = 0;x < SSD1306_WIDTH;x++) {
-//             DrawLine(buf, x, 0,  SSD1306_WIDTH - 1 - x, SSD1306_HEIGHT - 1, pix);
-//             render(buf, &frame_area);
-//         }
-
-//         for (int y = SSD1306_HEIGHT-1; y >= 0 ;y--) {
-//             DrawLine(buf, 0, y, SSD1306_WIDTH - 1, SSD1306_HEIGHT - 1 - y, pix);
-//             render(buf, &frame_area);
-//         }
-//         pix = false;
-//     }
-
-//     return 0;
-// }
 #endif
