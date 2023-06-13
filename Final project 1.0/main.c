@@ -158,7 +158,6 @@ void fn_ACCELEROMETRO();
 void fn_GPS();
 void fn_SAMPLING_RATE();
 
-
 void fn_ACC_X();
 void fn_ACC_Y();
 void fn_ACC_Z();
@@ -511,20 +510,20 @@ void fn_ACC_Z(){
 
 void left_button(){
     if(settings.final_depth){
-        // call buzzer(discard settings)
+        exit_nosave();
         tmp_settings = settings;
         settings.final_depth = false;
     }
 
     if(!settings.start_depth){
-        // call buzzer(normal sound)
+        click_button();
         settings.depth--;
         if(settings.depth == 0){
             settings.start_depth = true;
         }
     }
     else{
-        // call buzzer(error)
+        end_menu();
     }
 
 }
@@ -533,13 +532,13 @@ void rigth_button(){
     // printf("%d", settings.final_depth);
     settings.start_depth = false;
     if(settings.final_depth){
-        // call buzzer(save settings)
+        exit_save();
         settings.depth--;
         settings = tmp_settings;
         settings.final_depth = false;
     }
     else{
-        // call buzzer(normal sound)
+        click_button();
         settings.depth++;
     }
 }
@@ -550,19 +549,19 @@ void up_button(){
             case 0:
                 if(!(settings.current_state_function == NUM_STATES_FUNCTION-1)){
                     settings.current_state_function ++;
-                    // call buzzer(normal sound)
+                    click_button();
                 }
                 else {
-                    // call buzzer(error)
+                    end_menu();
                 }
                 break;
             case 1:
                 if(!(settings.current_state_settings == NUM_STATES_SETTINGS-1)){
                     settings.current_state_settings ++;
-                    // call buzzer(normal sound)
+                    click_button();
                 }
                 else {
-                    // call buzzer(error)
+                    end_menu();
                 }
                 break;
             case 2:
@@ -570,19 +569,19 @@ void up_button(){
                     case STATE_ACCELEROMETRO:
                         if(!(settings.current_state_accelerometer == NUM_STATES_ACCELEROMETER-1)){
                             settings.current_state_accelerometer ++;
-                            // call buzzer(normal sound)
+                            click_button();
                         }
                         else {
-                            // call buzzer(error)
+                            end_menu();
                         }
                         break;
                     case STATE_GPS:
                         if(!(settings.current_state_GPS == NUM_STATES_ACCELEROMETER-1)){
                             settings.current_state_GPS ++;
-                            // call buzzer(normal sound)
+                            click_button();
                         }
                         else {
-                            // call buzzer(error)
+                            end_menu();
                         }
                         break;
                 }
@@ -635,10 +634,10 @@ void up_button(){
                     case STATE_SAMPLING_RATE:
                         if(tmp_settings.Temp < MAX_SAMPLING_RATE){
                             tmp_settings.Sampling_Rate++;
-                                // call buzzer(normal sound)
+                                click_button();
                         }
                         else {
-                            // call buzzer(error)
+                            end_menu();
                         }
                         break;
                     }
@@ -654,19 +653,19 @@ void down_button(){
             case 0:
                 if(!(settings.current_state_function == 0)){
                     settings.current_state_function --;
-                    // call buzzer(normal sound)
+                    click_button();
                 }
                 else {
-                    // call buzzer(error)
+                    end_menu();
                 }
                 break;
             case 1:
                 if(!(settings.current_state_settings == 0)){
                     settings.current_state_settings --;
-                    // call buzzer(normal sound)
+                    click_button();
                 }
                 else {
-                    // call buzzer(error)
+                    end_menu();
                 }
                 break;
             case 2:
@@ -674,19 +673,19 @@ void down_button(){
                 case STATE_ACCELEROMETRO:
                     if(!(settings.current_state_accelerometer == 0)){
                         settings.current_state_accelerometer --;
-                        // call buzzer(normal sound)
+                        click_button();
                     }
                     else {
-                        // call buzzer(error)
+                        end_menu();
                     }
                     break;
                 case STATE_GPS:
                     if(!(settings.current_state_GPS == 0)){
                         settings.current_state_GPS --;
-                        // call buzzer(normal sound)
+                        click_button();
                     }
                     else {
-                        // call buzzer(error)
+                        end_menu();
                     }
                     break;
                 }
@@ -740,10 +739,10 @@ void down_button(){
                     case STATE_SAMPLING_RATE:
                         if(tmp_settings.Temp > 1){
                             tmp_settings.Sampling_Rate--;
-                                // call buzzer(normal sound)
+                            click_button();
                         }
                         else {
-                            // call buzzer(error)
+                            end_menu();
                         }
                         break;
                 }
