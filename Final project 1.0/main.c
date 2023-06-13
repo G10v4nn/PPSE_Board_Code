@@ -60,7 +60,9 @@
 
 #include "pico.h"
 #include "pico/stdlib.h"
+#include "pico/time.h"
 #include "hardware/gpio.h"
+#include "hardware/pwm.h"
 #include "hardware/adc.h"
 #include "hardware/rtc.h"
 #include "hardware/pll.h"
@@ -70,6 +72,7 @@
 #include "hardware/regs/io_bank0.h"
 #include "hardware/i2c.h"
 #include "hardware/pio.h"
+
 // #include "pico/sleep.h"
 
 // For __wfi
@@ -528,16 +531,18 @@ void left_button(){
 
 }
 
-void rigth_button(){
+void right_button(){
     // printf("%d", settings.final_depth);
     settings.start_depth = false;
     if(settings.final_depth){
+        init_buzzer();
         exit_save();
         settings.depth--;
         settings = tmp_settings;
         settings.final_depth = false;
     }
     else{
+        init_buzzer();
         click_button();
         settings.depth++;
     }
@@ -816,7 +821,7 @@ void buttons_callback(uint gpio, uint32_t events) {
             exit_usb_mode = true;
             interrompi = true;
             time_bt_right = time;
-            rigth_button();
+            right_button();
             // printf("clicked right \n");
         }
         break;

@@ -7,6 +7,9 @@
 #include "buzzer.h"
 #include "pitches.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+
 #define TOP_MAX 65534
 
 const uint8_t BUZ_PIN = 21;
@@ -91,7 +94,7 @@ void play(uint16_t frequency)
 void click_button(){
     play(NOTE_GS1);
     sleep_ms(70);
-
+    
     stop();
 }
 

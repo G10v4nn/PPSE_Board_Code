@@ -42,6 +42,7 @@
         "clocks.h": "c",
         "screen.h": "c",
         "ssd1306_font.h": "c",
-        "8x8_font.h": "c"
+        "8x8_font.h": "c",
+        "pwm.h": "c"
     }
 }
