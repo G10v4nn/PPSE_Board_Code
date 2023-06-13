@@ -39,6 +39,7 @@
         "error.h": "c",
         "binary_info.h": "c",
         "io_bank0.h": "c",
-        "clocks.h": "c"
+        "clocks.h": "c",
+        "screen.h": "c"
     }
 }

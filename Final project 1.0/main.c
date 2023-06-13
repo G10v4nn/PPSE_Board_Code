@@ -56,11 +56,10 @@
 ****************************************************************************************/
 
 #include <stdio.h>
-#include "pico/stdlib.h"
-
-// #include "pico/sleep.h"
+#include <stdlib.h>
 
 #include "pico.h"
+#include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/adc.h"
 #include "hardware/rtc.h"
@@ -70,6 +69,8 @@
 #include "hardware/rosc.h"
 #include "hardware/regs/io_bank0.h"
 #include "hardware/i2c.h"
+#include "hardware/pio.h"
+// #include "pico/sleep.h"
 
 // For __wfi
 #include "hardware/sync.h"
@@ -241,21 +242,7 @@ void init_buttons(){
     // per cambio stato GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL
 }
 
-/* Definite nei .h
-void init_temperature(struct Data_storage *Data){}
-
-void init_accelerometer(struct Data_storage *Data){}
-
-void init_gps(struct Data_storage *Data){}
-
-void init_buzzer(){}
-
-void init_screen(){}
-*/
-
 //modificare led
-
-
 void init_led(){
 
 }
@@ -292,14 +279,6 @@ void print_DATA(struct Data_storage *Data){
     printf("ACCELEROMETER: X = %d, \t X = %d, \t X = %d \n", Data->x_acceleration, Data->y_acceleration, Data->z_acceleration);
     printf("TEMPERATURE: %d Celsius \n", Data->temperature);
 }
-
-/* Definite nei .h
-void get_temperature(struct Data_storage *Data){}
-
-void get_accelerometer(struct Data_storage *Data){}
-
-void get_gps(struct Data_storage *Data){}
-*/
 
 /*******************************************************************/
 /* state - functioncall link */
@@ -1007,7 +986,7 @@ int main() {
         if(settings.current_state_menu < NUM_STATES_MENU){
             (*fsm_INIT_DEFAULT[settings.current_state_menu].state_function)();     //call to FSM functions
             // // printf("%d \n",settings.depth);
-            // init_screen_i2c();
+            // init_screen();
             // WriteString_Fonts_(0,0,"initialization",font_8x8);
             // write_menu_on_screen("MENU'","Start Sampling","Settings","");
 
