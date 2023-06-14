@@ -97,7 +97,12 @@
 
 
 
-#define MAX_SAMPLING_RATE 150
+#define MAX_SAMPLING_RATE 60*60 // 1hr
+
+
+static bool started = false;
+bool interrompi = false;
+bool exit_usb_mode = false;
 
 /*******************************************************************/
 /* definizioni delle funzioni di inizializzazione */
@@ -222,6 +227,7 @@ void fn_INIT(){
     printf("initialization done \n");
     settings.current_state_menu = STATE_DEFAULT;
     tmp_settings = settings;
+    interrompi = true;
 }
 
 void fn_DEFAULT(){
@@ -247,6 +253,7 @@ void fn_DEFAULT(){
             break;
         case STATE_DATA_EXTRACTION:
             printf("\t STATE_DATA_EXTRACTION \n");
+            started = false;
             clear_screen();
             write_menu_on_screen("MENU'","USB transfer","Start Sampling","Settings");
             break;
@@ -314,10 +321,6 @@ void fn_SETTINGS(){
 
 }
 
-static bool started = false;
-bool interrompi = false;
-bool exit_usb_mode = false;
-
 void fn_DATA_EXTRACTION(){
     //default values for this state
         // USB.trasnfer = false
@@ -326,28 +329,45 @@ void fn_DATA_EXTRACTION(){
     if(settings.depth > 1){
         // errore, DATA_EXTRACTION non ha questa profondità
     }else{
-        printf("DATA EXTRACTION\n");
-        printf("more info \n");
+        static int iteration = 0;
         struct Data_storage Data;
-        init_Data_storage(&Data);
-        clear_screen();
-        write_menu_on_screen("SAMPLING","","loading","");        
         if(!started){
+            printf("DATA EXTRACTION\n");
+            printf("more info \n");
+            init_Data_storage(&Data);
+            iteration = 0;
+            clear_screen();
+            write_menu_on_screen("SAMPLING","","loading","");        
+        }
+
+        while(!interrompi && iteration != 99){
             started = true;
             get_temperature(&Data);
             get_accelerometer(&Data);
             get_gps(&Data);
+            iteration++;
+            char  string_1 [10]; 
+            sprintf(string_1," %d",iteration);
+            char string_2 [10];
+            sprintf(string_2,"/100");
+            clear_screen();
+            write_menu_on_screen("SAMPLING","iteration:",string_1,string_2);
             print_DATA(&Data);
-            // da modificare
-            sleep_ms(settings.Sampling_Rate);
-            started = false;
-            interrompi = true;
+            // da modificare un po' intricato
+            int i = 0;
+            for(i = 0; i<settings.Sampling_Rate;i++){
+                busy_wait_ms(1000);
+                if(interrompi){
+                    break;
+                }
+            }
         }
-        // if(data extraction started == false)
-            // data extraction start => 
-                // - set all the parameters
-                // - enable all the interrupts
-        // mostra a schermo l'avanzamento del data extractor
+
+        if(!interrompi){
+            clear_screen();
+            write_menu_on_screen("SAMPLING","iteration:","DONE","");
+            end_acquisition();
+        }
     }
 
 }
@@ -389,7 +409,15 @@ void fn_TEMPERATURA(){
     settings.final_depth = true;
     printf("TEMPERATURA \n");
     printf("more info:\n");
-    printf("sampling rate:  %d \n",tmp_settings.Temp);
+    printf("enable:  %d \n",tmp_settings.Temp);
+    if(tmp_settings.Temp){
+        clear_screen();
+        write_menu_on_screen("TEMP","","Enabled","Disabled");
+    }
+    else{
+        clear_screen();
+        write_menu_on_screen("TEMP","Enabled","Disabled","");
+    }
     //gestisce tutte le varie impostazioni di TEMPERATURA
     // mostrare a schermo
     // TITOLO: SAMPLING RATE
@@ -408,18 +436,24 @@ void fn_ACCELEROMETRO(){
     }
     else{
         tmp_settings = settings;
-        printf("ACC: X, Y, Z e sampling rate \n");
+        printf("ACC: X, Y, Z \n");
         printf("selettore su:");
         switch (settings.current_state_accelerometer)
         {
         case STATE_X_ACC:
             printf("\t STATE_X_ACC \n");
+            clear_screen();
+            write_menu_on_screen("ACC:","Y","X","");
             break;
         case STATE_Y_ACC:
-            printf("\t STATE_Y_ACC \n");
+            printf("\t STATE_Z_ACC \n");
+            clear_screen();
+            write_menu_on_screen("ACC:","Z","Y","X");
             break;
         case STATE_Z_ACC:
             printf("\t STATE_Z_ACC \n");
+            clear_screen();
+            write_menu_on_screen("ACC:","","Z","Y");
             break;
         }
         // mostrare a schermo il menù con i vari attributi
@@ -444,12 +478,18 @@ void fn_GPS(){
         {
         case GRADI_1_GPS:
             printf("\t case GRADI_1_GPS \n");
+            clear_screen();
+            write_menu_on_screen("GPS:","LON","LAT","");
             break;
         case GRADI_2_GPS:
             printf("\t case GRADI_2_GPS \n");
+            clear_screen();
+            write_menu_on_screen("GPS:","ALT","LON","LAT");
             break;
         case ALTITUDINE_GPS:
             printf("\t case ALTITUDINE_GPS \n");
+            clear_screen();
+            write_menu_on_screen("GPS:","","ALT","LON");
             break;
         }
         // mostrare a schermo il menù con i vari attributi
@@ -461,6 +501,10 @@ void fn_SAMPLING_RATE(){
     printf("SAMPLING_RATE \n");
     printf("more info:\n");
     printf("sampling rate:  %d  \n",tmp_settings.Sampling_Rate);
+    char string_1 [10];
+    sprintf(string_1,"%d s",tmp_settings.Sampling_Rate);
+    clear_screen();
+    write_menu_on_screen("SAMPLING","sampling every:", string_1, " max = 3600");
     // mostra a schermo il valore temporaneo di SAMPLING_RATE
 }
 
@@ -473,6 +517,14 @@ void fn_GRADI_1_GPS(){
     printf("GPS - GRADI_1 \n");
     printf("more info:\n");
     printf("sampling rate:  %d \n",tmp_settings.Gradi_1_GPS);
+    if(tmp_settings.Gradi_1_GPS){
+        clear_screen();
+        write_menu_on_screen("GPS - LAT","","Enabled","Disabled");
+    }
+    else{
+        clear_screen();
+        write_menu_on_screen("GPS - LAT","Enabled","Disabled","");
+    }
     // mostra a schermo il valore temporaneo di SAMPLING_RATE
 }
 void fn_GRADI_2_GPS(){
@@ -480,13 +532,29 @@ void fn_GRADI_2_GPS(){
     printf("GPS - GRADI_2 \n");
     printf("more info:\n");
     printf("sampling rate:  %d \n",tmp_settings.Gradi_2_GPS);
+    if(tmp_settings.Gradi_2_GPS){
+        clear_screen();
+        write_menu_on_screen("GPS - LON","","Enabled","Disabled");
+    }
+    else{
+        clear_screen();
+        write_menu_on_screen("GPS - LON","Enabled","Disabled","");
+    }
     // mostra a schermo il valore temporaneo di SAMPLING_RATE
 }
 void fn_ALTITUDINE_GPS(){
     settings.final_depth = true;
-    printf("GPS - GRADI_1 \n");
+    printf("GPS - ALTIUDINE \n");
     printf("more info:\n");
     printf("sampling rate:  %d \n",tmp_settings.Altitudine_GPS);
+    if(tmp_settings.Altitudine_GPS){
+        clear_screen();
+        write_menu_on_screen("GPS - ALT","","Enabled","Disabled");
+    }
+    else{
+        clear_screen();
+        write_menu_on_screen("GPS - ALT","Enabled","Disabled","");
+    }
     // mostra a schermo il valore temporaneo di SAMPLING_RATE
 }
 
@@ -498,6 +566,14 @@ void fn_ACC_X(){
     printf("ACCELEROMETER \n");
     printf("more info:\n");
     printf("X(=0 if not enabled, =1 if enabled):  %d  \n",tmp_settings.Acc_X);
+    if(tmp_settings.Acc_X){
+        clear_screen();
+        write_menu_on_screen("ACC - X ","","Enabled","Disabled");
+    }
+    else{
+        clear_screen();
+        write_menu_on_screen("ACC - X ","Enabled","Disabled","");
+    }
     // mostra a schermo il valore temporaneo di X (ENABLE OR DISABLE)
 }
 void fn_ACC_Y(){
@@ -505,6 +581,14 @@ void fn_ACC_Y(){
     printf("ACCELEROMETER \n");
     printf("more info:\n");
     printf("Y(=0 if not enabled, =1 if enabled):  %d \n",tmp_settings.Acc_Y);
+    if(tmp_settings.Acc_Y){
+        clear_screen();
+        write_menu_on_screen("ACC - Y ","","Enabled","Disabled");
+    }
+    else{
+        clear_screen();
+        write_menu_on_screen("ACC - Y ","Enabled","Disabled","");
+    }
     // mostra a schermo il valore temporaneo di y (ENABLE OR DISABLE)
 }
 void fn_ACC_Z(){
@@ -512,6 +596,14 @@ void fn_ACC_Z(){
     printf("ACCELEROMETER \n");
     printf("more info:\n");
     printf("Z(=0 if not enabled, =1 if enabled):  %d \n",tmp_settings.Acc_Z);
+    if(tmp_settings.Acc_Z){
+        clear_screen();
+        write_menu_on_screen("ACC - Z ","","Enabled","Disabled");
+    }
+    else{
+        clear_screen();
+        write_menu_on_screen("ACC - Z ","Enabled","Disabled","");
+    }
     // mostra a schermo il valore temporaneo di z (ENABLE OR DISABLE)
 }
 
@@ -749,7 +841,7 @@ void down_button(){
                         }                 
                         break;
                     case STATE_SAMPLING_RATE:
-                        if(tmp_settings.Temp > 1){
+                        if(tmp_settings.Temp > 2){
                             tmp_settings.Sampling_Rate--;
                             click_button();
                             

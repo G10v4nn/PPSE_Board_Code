@@ -113,7 +113,7 @@ Settings_storage settings = {
     true,                   // bool start_depth;
     0,                      // int depth;
     false,                  // bool final_depth;
-    1000,
+    1,                   //     uint32_t Sampling_Rate;
 
     // accelerometer
     true,                   // bool Acc_X;
