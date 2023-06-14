@@ -1,8 +1,8 @@
 #include "pico.h"
-#include "pico/time.h"
 #include "hardware/gpio.h"
 #include "hardware/pwm.h"
 #include "hardware/clocks.h"
+#include "hardware/timer.h"
 
 #include "buzzer.h"
 #include "pitches.h"
@@ -93,71 +93,71 @@ void play(uint16_t frequency)
 
 void click_button(){
     play(NOTE_GS1);
-    sleep_ms(70);
+    busy_wait_ms(70);
     
     stop();
 }
 
 void end_menu(){
     play(NOTE_E5);
-    sleep_ms(80);
+    busy_wait_ms(80);
 
     stop();
 }
 
 void exit_nosave(){
     play(NOTE_C7);
-    sleep_ms(60);
+    busy_wait_ms(60);
     stop();
-    sleep_ms(50);
+    busy_wait_ms(50);
     play(NOTE_G6);
-    sleep_ms(100);
+    busy_wait_ms(100);
     stop();
 }
 
 void exit_save(){
     play(NOTE_C7);
-    sleep_ms(60);
+    busy_wait_ms(60);
     stop();
-    sleep_ms(50);
+    busy_wait_ms(50);
     play(NOTE_G6);
-    sleep_ms(60);
+    busy_wait_ms(60);
     stop();
-    sleep_ms(50);
+    busy_wait_ms(50);
     play(NOTE_E6);
-    sleep_ms(60);
+    busy_wait_ms(60);
     stop();
 }
 
 void end_acquisition(){
     play(NOTE_E7);
-    sleep_ms(120);
+    busy_wait_ms(120);
     stop();
     play(NOTE_E7);
-    sleep_ms(120);
+    busy_wait_ms(120);
     stop();
-    sleep_ms(120);
+    busy_wait_ms(120);
     play(NOTE_E7);
-    sleep_ms(120);
+    busy_wait_ms(120);
     stop();
-    sleep_ms(120);    
+    busy_wait_ms(120);    
     play(NOTE_C7);
-    sleep_ms(120);
+    busy_wait_ms(120);
     stop();
     play(NOTE_E7);
-    sleep_ms(120);
+    busy_wait_ms(120);
     stop();
-    sleep_ms(120);
+    busy_wait_ms(120);
     play(NOTE_G7);
-    sleep_ms(120);
+    busy_wait_ms(120);
     stop();
-    sleep_ms(120);
-    sleep_ms(120);
-    sleep_ms(120);
+    busy_wait_ms(120);
+    busy_wait_ms(120);
+    busy_wait_ms(120);
     play(NOTE_G6);
-    sleep_ms(120);
+    busy_wait_ms(120);
     stop();
-    sleep_ms(120);
-    sleep_ms(120);
-    sleep_ms(120);
+    busy_wait_ms(120);
+    busy_wait_ms(120);
+    busy_wait_ms(120);
 }

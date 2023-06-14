@@ -43,6 +43,15 @@
         "screen.h": "c",
         "ssd1306_font.h": "c",
         "8x8_font.h": "c",
-        "pwm.h": "c"
+        "pwm.h": "c",
+        "pll.h": "c",
+        "xosc.h": "c",
+        "rtc.h": "c",
+        "rosc.h": "c",
+        "pio.h": "c",
+        "scb.h": "c",
+        "sync.h": "c",
+        "timer.h": "c",
+        "adc.h": "c"
     }
 }

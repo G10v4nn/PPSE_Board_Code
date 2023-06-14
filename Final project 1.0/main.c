@@ -59,19 +59,23 @@
 #include <stdlib.h>
 
 #include "pico.h"
-#include "pico/stdlib.h"
 #include "pico/time.h"
+#include "pico/stdlib.h"
 #include "hardware/gpio.h"
 #include "hardware/pwm.h"
 #include "hardware/adc.h"
-#include "hardware/rtc.h"
-#include "hardware/pll.h"
-#include "hardware/clocks.h"
-#include "hardware/xosc.h"
-#include "hardware/rosc.h"
-#include "hardware/regs/io_bank0.h"
 #include "hardware/i2c.h"
 #include "hardware/pio.h"
+#include "hardware/clocks.h"
+#include "hardware/timer.h"
+
+//not use now: uncomment and add to CMakeList if needed
+//#include "hardware/rtc.h"
+//#include "hardware/pll.h"
+//#include "hardware/xosc.h"
+//#include "hardware/rosc.h"
+//#include "hardware/regs/io_bank0.h"
+
 
 // #include "pico/sleep.h"
 
@@ -88,6 +92,10 @@
 #include "screen.h"
 #include "led.h"
 #include "FSMtypes.h"
+
+#include "pitches.h"
+
+
 
 #define MAX_SAMPLING_RATE 150
 
@@ -520,6 +528,7 @@ void left_button(){
 
     if(!settings.start_depth){
         click_button();
+
         settings.depth--;
         if(settings.depth == 0){
             settings.start_depth = true;
@@ -535,14 +544,12 @@ void right_button(){
     // printf("%d", settings.final_depth);
     settings.start_depth = false;
     if(settings.final_depth){
-        init_buzzer();
         exit_save();
         settings.depth--;
         settings = tmp_settings;
         settings.final_depth = false;
     }
     else{
-        init_buzzer();
         click_button();
         settings.depth++;
     }
@@ -745,6 +752,7 @@ void down_button(){
                         if(tmp_settings.Temp > 1){
                             tmp_settings.Sampling_Rate--;
                             click_button();
+                            
                         }
                         else {
                             end_menu();
