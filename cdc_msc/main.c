@@ -29,8 +29,6 @@
 
 #include "bsp/board.h"
 #include "tusb.h"
-#include "msc_disk.c"
-#include "USBdata.h"
 
 //--------------------------------------------------------------------+
 // MACRO CONSTANT TYPEDEF PROTYPES
@@ -49,30 +47,17 @@ enum  {
 
 static uint32_t blink_interval_ms = BLINK_NOT_MOUNTED;
 
-void init_file_user_define(){
-  unsigned int i =0;
-  for(i=0;i<(sizeof(README_CONTENTS)-1);i++){
-    msc_disk[3+i/512][i%512] = README_CONTENTS[i];
-  }
-}
-
-void init_file_string(){
-  unsigned int i =0;
-  for(i=0;i<(32-3)*512 -1;i++){
-      README_CONTENTS[i] = 0x00;
-    }
-}
-
 void led_blinking_task(void);
 void cdc_task(void);
+
 /*------------- MAIN -------------*/
 int main(void)
 {
-  init_file_string();
-  init_file_user_define();
   board_init();
+
   // init device stack on configured roothub port
   tud_init(BOARD_TUD_RHPORT);
+
   while (1)
   {
     tud_task(); // tinyusb device task

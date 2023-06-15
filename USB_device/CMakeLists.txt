@@ -13,6 +13,7 @@ pico_sdk_init()
 
 add_executable(dev_lowlevel
         dev_lowlevel.c
+        hello_usb.c
         )
 
 

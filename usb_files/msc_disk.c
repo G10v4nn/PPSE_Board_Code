@@ -26,7 +26,7 @@
 #define __MSC_DISK__
 #include "bsp/board.h"
 #include "tusb.h"
-#include "Data.h"
+#include "USBdata.h"
 #if CFG_TUD_MSC
 
 // whether host does safe-eject
