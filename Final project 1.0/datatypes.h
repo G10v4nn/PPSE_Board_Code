@@ -6,6 +6,7 @@
 
 struct Data_storage{
     // gps
+    float time;    
     int Hours, Minutes, Seconds;
 	float Longitude, Latitude;
     long Altitude;
@@ -16,7 +17,7 @@ struct Data_storage{
     float z_acceleration;
 
     // temperature
-    int temperature;
+    float temperature;
 
     /* data */
 };

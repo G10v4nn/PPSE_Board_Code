@@ -21,6 +21,7 @@ led.c
 )
 
 add_subdirectory(hardware_rosc)
+add_subdirectory(cdc_msc)
 
 # pull in common dependencies
 target_link_libraries(
@@ -34,6 +35,7 @@ target_link_libraries(
     hardware_pio
     hardware_clocks
     hardware_timer
+    cdc_msc
     )
 
 #include "hardware/rtc.h"
@@ -46,8 +48,8 @@ target_link_libraries(
 #include "hardware/structs/scb.h"
 
 # enable usb output, disable uart output
-pico_enable_stdio_usb(main 1)
-pico_enable_stdio_uart(main 0)
+# pico_enable_stdio_usb(main 1)
+# pico_enable_stdio_uart(main 0)
 
 # create map/bin/hex/uf2 file etc.
 pico_add_extra_outputs(main)

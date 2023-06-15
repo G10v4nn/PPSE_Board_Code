@@ -95,6 +95,7 @@
 
 #include "pitches.h"
 
+#include "cdc_msc/main.c"
 
 
 #define MAX_SAMPLING_RATE 60*60 // 1hr
@@ -241,6 +242,8 @@ void fn_DEFAULT(){
         }
     }
     else{
+        uint8_t leds_color[8*3];
+        int i = 0;
         tmp_settings = settings;
         printf("USB, DATA EXTRACTION e SETTINGS \n");
         printf("selettore su:");
@@ -252,6 +255,13 @@ void fn_DEFAULT(){
             write_menu_on_screen("MENU'","Start Sampling","Settings","");
             break;
         case STATE_DATA_EXTRACTION:
+
+            for(i=0;i<8;i++){
+                leds_color[0 + i*3] = 0;
+                leds_color[1 + i*3] = 0;
+                leds_color[2 + i*3] = 0;
+            }
+            set_sequential_led(leds_color,8);
             printf("\t STATE_DATA_EXTRACTION \n");
             started = false;
             clear_screen();
@@ -331,13 +341,18 @@ void fn_DATA_EXTRACTION(){
     }else{
         static int iteration = 0;
         struct Data_storage Data;
+        static uint64_t time;
+        static uint64_t time_last_call;
         if(!started){
             printf("DATA EXTRACTION\n");
             printf("more info \n");
             init_Data_storage(&Data);
             iteration = 0;
             clear_screen();
-            write_menu_on_screen("SAMPLING","","loading","");        
+            write_menu_on_screen("SAMPLING","","loading","");
+            init_file_string();
+            strcat(README_CONTENTS, "DATA, ORA, LATITUDINE, LONGITUDINE, ALTITUDINE, ACCELEROMETRO X, ACCELEROMETRO Y, ACCELEROMETRO Z, TEMPERATURA \r\n\r\n");
+            time_last_call = time_us_64();
         }
 
         while(!interrompi && iteration != 99){
@@ -353,25 +368,148 @@ void fn_DATA_EXTRACTION(){
             clear_screen();
             write_menu_on_screen("SAMPLING","iteration:",string_1,string_2);
             print_DATA(&Data);
+            char str_to_usb [120] = "";
+            sprintf(str_to_usb,"%f, %d:%d:%d, %0.5fN, %0.5fE, %0.1fm, %0.2fm/s, %0.2fm/s,  %0.2fm/s, %0.2fC \r\n");
+            strcat(README_CONTENTS, str_to_usb);
             // da modificare un po' intricato
-            int i = 0;
-            for(i = 0; i<settings.Sampling_Rate;i++){
-                busy_wait_ms(1000);
+            time = time_us_64();
+            while (time - time_last_call  < (settings.Sampling_Rate*1000000) )
+            {
+                uint8_t leds_color[8*3];
+                int i = 0;
+                for(i=0;i<8;i++){
+                    leds_color[0 + i*3] = 0;
+                    leds_color[1 + i*3] = 0;
+                    leds_color[2 + i*3] = 0;
+                }
+                if(time - time_last_call  < 1*(settings.Sampling_Rate*1000000)/9){
+                    for(i=0;i<8;i++){
+                        leds_color[0 + i*3] = 0;
+                        leds_color[1 + i*3] = 0;
+                        leds_color[2 + i*3] = 0;
+                    }
+                }
+                else if(time - time_last_call  < 2*(settings.Sampling_Rate*1000000)/9){
+                    for(i=0;i<1;i++){
+                        leds_color[0 + i*3] = 255;
+                        leds_color[1 + i*3] = 255;
+                        leds_color[2 + i*3] = 255;
+                    }
+                }
+                else if (time - time_last_call  < 3*(settings.Sampling_Rate*1000000)/9)
+                {
+                    for(i=0;i<2;i++){
+                        leds_color[0 + i*3] = 255;
+                        leds_color[1 + i*3] = 255;
+                        leds_color[2 + i*3] = 255;
+                    }                }
+                else if (time - time_last_call  < 4*(settings.Sampling_Rate*1000000)/9)
+                {
+                    for(i=0;i<3;i++){
+                        leds_color[0 + i*3] = 255;
+                        leds_color[1 + i*3] = 255;
+                        leds_color[2 + i*3] = 255;
+                    }                }
+                else if (time - time_last_call  < 5*(settings.Sampling_Rate*1000000)/9)
+                {
+                    for(i=0;i<4;i++){
+                        leds_color[0 + i*3] = 255;
+                        leds_color[1 + i*3] = 255;
+                        leds_color[2 + i*3] = 255;
+                    }                }
+                else if (time - time_last_call  < 6*(settings.Sampling_Rate*1000000)/9)
+                {
+                    for(i=0;i<5;i++){
+                        leds_color[0 + i*3] = 255;
+                        leds_color[1 + i*3] = 255;
+                        leds_color[2 + i*3] = 255;
+                    }                }
+                else if (time - time_last_call  < 7*(settings.Sampling_Rate*1000000)/9)
+                {
+                    for(i=0;i<6;i++){
+                        leds_color[0 + i*3] = 255;
+                        leds_color[1 + i*3] = 255;
+                        leds_color[2 + i*3] = 255;
+                    }                }
+                else if (time - time_last_call  < 7*(settings.Sampling_Rate*1000000)/8){
+                    for(i=0;i<7;i++){
+                        leds_color[0 + i*3] = 255;
+                        leds_color[1 + i*3] = 255;
+                        leds_color[2 + i*3] = 255;
+                    }                
+                }
+                else{
+                    for(i=0;i<8;i++){
+                        leds_color[0 + i*3] = 255;
+                        leds_color[1 + i*3] = 255;
+                        leds_color[2 + i*3] = 255;
+                    }                     
+                }
+                set_sequential_led(leds_color,8);
+
                 if(interrompi){
+                    for(i=0;i<8;i++){
+                        leds_color[0 + i*3] = 0;
+                        leds_color[1 + i*3] = 0;
+                        leds_color[2 + i*3] = 0;
+                    }
+                    set_sequential_led(leds_color,8);
                     break;
                 }
+                time = time_us_64();
             }
+            time_last_call = time_last_call + (settings.Sampling_Rate*1000000);
+
+
         }
 
         if(!interrompi){
+            int i = 0;
+            uint8_t leds_color[8*3];
             clear_screen();
             write_menu_on_screen("SAMPLING","iteration:","DONE","");
             end_acquisition();
+            busy_wait_ms(500);
+            for(i=0;i<8;i++){
+                leds_color[0 + i*3] = 255;
+                leds_color[1 + i*3] = 255;
+                leds_color[2 + i*3] = 255;
+            }
+            busy_wait_ms(1000);
+            for(i=0;i<8;i++){
+                leds_color[0 + i*3] = 0;
+                leds_color[1 + i*3] = 0;
+                leds_color[2 + i*3] = 0;
+            }
+                        busy_wait_ms(500);
+            for(i=0;i<8;i++){
+                leds_color[0 + i*3] = 255;
+                leds_color[1 + i*3] = 255;
+                leds_color[2 + i*3] = 255;
+            }
+            busy_wait_ms(1000);
+            for(i=0;i<8;i++){
+                leds_color[0 + i*3] = 0;
+                leds_color[1 + i*3] = 0;
+                leds_color[2 + i*3] = 0;
+            }
+                        busy_wait_ms(500);
+            for(i=0;i<8;i++){
+                leds_color[0 + i*3] = 255;
+                leds_color[1 + i*3] = 255;
+                leds_color[2 + i*3] = 255;
+            }
+            busy_wait_ms(1000);
+            for(i=0;i<8;i++){
+                leds_color[0 + i*3] = 0;
+                leds_color[1 + i*3] = 0;
+                leds_color[2 + i*3] = 0;
+            }
+            set_sequential_led(leds_color,8);
         }
     }
 
 }
-
 void fn_USB(){
     //default value
         //data extraction pause => disable all the interrupts etc
@@ -385,11 +523,16 @@ void fn_USB(){
         printf("USB \n");
         printf("more info \n");
         clear_screen();
-        write_menu_on_screen("USB","","transfer","");   
+        write_menu_on_screen("USB","","transfer","");
+        init_file_user_define();
+        init_USB();
+        tud_connect();
         while(1){
+            tud_connect();
+            USB_transfer();
             printf("USB tranfer \n");
-            sleep_ms(1000);
             if(exit_usb_mode){
+                tud_disconnect();
                 interrompi = true;
                 exit_usb_mode = false;
                 break;

@@ -115,7 +115,7 @@ void init_led(){
 void turn_on_led(){
     uint8_t leds_color[8*3];
     int i = 0;
-    for(i=0;i<10;i++){
+    for(i=0;i<8;i++){
         leds_color[0 + i*3] = 255;
         leds_color[1 + i*3] = 255;
         leds_color[2 + i*3] = 255;
@@ -123,7 +123,7 @@ void turn_on_led(){
     set_sequential_led(leds_color,8);
     sleep_ms(1000);
 
-    for(i=0;i<10;i++){
+    for(i=0;i<8;i++){
         leds_color[0 + i*3] = 0;
         leds_color[1 + i*3] = 0;
         leds_color[2 + i*3] = 255;
@@ -131,7 +131,7 @@ void turn_on_led(){
     set_sequential_led(leds_color,8);
     sleep_ms(1000);
 
-    for(i=0;i<10;i++){
+    for(i=0;i<8;i++){
         leds_color[0 + i*3] = 0;
         leds_color[1 + i*3] = 255;
         leds_color[2 + i*3] = 0;
@@ -140,7 +140,7 @@ void turn_on_led(){
     set_sequential_led(leds_color,8);
     sleep_ms(1000);
 
-    for(i=0;i<10;i++){
+    for(i=0;i<8;i++){
         leds_color[0 + i*3] = 255;
         leds_color[1 + i*3] = 0;
         leds_color[2 + i*3] = 0;

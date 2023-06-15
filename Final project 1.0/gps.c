@@ -263,6 +263,7 @@ void init_gps(void)
 
 void get_gps(struct Data_storage *Data){
     check_gps(&GPS);
+	Data->time = GPS.Time;
     Data->Hours = GPS.Hours;
     Data->Minutes = GPS.Minutes;
     Data->Seconds = GPS.Seconds;
