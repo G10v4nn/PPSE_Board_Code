@@ -38,15 +38,6 @@ target_link_libraries(
     cdc_msc
     )
 
-#include "hardware/rtc.h"
-#include "hardware/pll.h"
-#include "hardware/xosc.h"
-#include "hardware/rosc.h"
-#include "hardware/regs/io_bank0.h"
-
-#include "hardware/sync.h"
-#include "hardware/structs/scb.h"
-
 # enable usb output, disable uart output
 # pico_enable_stdio_usb(main 1)
 # pico_enable_stdio_uart(main 0)
