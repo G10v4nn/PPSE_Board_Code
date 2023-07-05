@@ -26,16 +26,16 @@
  *              selezione se scaricare o no i dati tramite selettore up/down => es. USB mass storage Enable/Disabled
  *          - settings:
  *              sotto menù con:
+ *                  - sampling rate (numero di secondi tra due acquisizioni)
  *                  - temperatura:
- *                      - sampling rate (numero di acquisizione per ora?)
+ *                      - quali assi salvare:
+ *                          - activate/disactivate
  *                  - accelrometro:
- *                      - sampling rate (numero di acquisizione per ora?)
  *                      - quali assi salvare:
  *                          - x => activate/disactivate
  *                          - y => activate/disactivate
  *                          - z => activate/disactivate
  *                  - gps:
- *                      - sampling rate (numero di acquisizione per ora?)
  *                      - quali valori da salvare:
  *                          - ora => alwalys active
  *                          - da specificare
