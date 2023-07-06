@@ -217,14 +217,10 @@ void check_gps(struct TGPS *GPS)
 {
 	static unsigned char Line[100];
 	static int Length=0;
-
 	while (uart_is_readable(uart1))
 	{
 		char Character;
-		
 		Character = uart_getc(uart1);
-		// putchar(Character);
-
 		if (Character == '$')
 		{
 			Line[0] = Character;
