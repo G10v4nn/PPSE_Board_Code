@@ -492,7 +492,7 @@ void fn_DATA_EXTRACTION(){
                 leds_color[1 + i*3] = 0;
                 leds_color[2 + i*3] = 0;
             }
-                        busy_wait_ms(500);
+            busy_wait_ms(500);
             for(i=0;i<8;i++){
                 leds_color[0 + i*3] = 255;
                 leds_color[1 + i*3] = 255;
@@ -1090,10 +1090,6 @@ int main() {
     {
         if(settings.current_state_menu < NUM_STATES_MENU){
             (*fsm_INIT_DEFAULT[settings.current_state_menu].state_function)();     //call to FSM functions
-            // // printf("%d \n",settings.depth);
-            // init_screen();
-            // WriteString_Fonts_8x8(0,0,"initialization");
-            // write_menu_on_screen("MENU'","Start Sampling","Settings","");
         }
         else{
             /* error */
