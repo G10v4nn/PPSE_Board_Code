@@ -77,20 +77,6 @@ void USB_transfer(){
     led_blinking_task();
     cdc_task();
 }
-// int main(void)
-// {
-
-
-//   while (1)
-//   {
-//     tud_task(); // tinyusb device task
-//     led_blinking_task();
-
-//     cdc_task();
-//   }
-
-//   return 0;
-// }
 
 //--------------------------------------------------------------------+
 // Device callbacks
