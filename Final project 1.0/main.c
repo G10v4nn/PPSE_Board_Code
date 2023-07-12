@@ -368,7 +368,7 @@ void fn_DATA_EXTRACTION(){
             write_menu_on_screen("SAMPLING","iteration:",string_1,string_2);
             print_DATA(&Data);
             char str_to_usb [120] = "";
-            sprintf(str_to_usb,"%f, %d:%d:%d, %0.5fN, %0.5fE, %0.1fm, %0.2fm/s, %0.2fm/s,  %0.2fm/s, %0.2fC \r\n");
+            sprintf(str_to_usb,"%f, %d:%d:%d, %0.5fN, %0.5fE, %0.1fm, %0.2fm/s, %0.2fm/s,  %0.2fm/s, %0.2fC \r\n",Data.time,Data.Hours,Data.Minutes,Data.Seconds,Data.Longitude,Data.Altitude,Data.Latitude,Data.x_acceleration,Data.y_acceleration,Data.z_acceleration,Data.temperature);
             strcat(README_CONTENTS, str_to_usb);
             // da modificare un po' intricato
             time = time_us_64();
