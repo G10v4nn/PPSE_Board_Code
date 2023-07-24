@@ -1,0 +1,2 @@
+# Usb data logger
+This project was done as a final paper in the electronic systems design and prototyping course. In the **document** folder you can read the report explaining the project and the schematics of the electronic part. In the other two folders are the files for the hardware and firmware design.
